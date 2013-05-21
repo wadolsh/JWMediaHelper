@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Feed Add</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link href="libs/bootstrap/bootstrap.css" rel="stylesheet" media="screen">
+</head>
+<body>
+<div class="page-header">
+    <h1>FEED 정보<small>추가</small></h1>
+</div>
+
+<div class="panel">
+    <!-- Default panel contents -->
+    <div class="panel-heading">취득한 링크</div>
+    <p id="link_address"></p>
+
+    <!-- List group -->
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item">FEED 정보 <img src="" id="image" /></li>
+        <li class="list-group-item">타이틀 <small id="title"></small></li>
+        <li class="list-group-item">링크 <a href="" id="link_href"><small id="link"></small></a>  </li>
+        <li class="list-group-item">언어 <small id="language"></small></li>
+    </ul>
+</div>
+
+<div class="navbar navbar-fixed-bottom">
+    <a href="#" class="navbar-text pull-right">등록</a></p>
+</div>
+<script src="libs/jquery.min.js"></script>
+<script src="libs/sugar.min.js"></script>
+<script src="libs/bootstrap/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="js/cordova-2.7.0.js"></script>
+<script type="text/javascript" src="js/webintent.js"></script>
+<script type="text/javascript">
+    var app = {
+        init : function() {
+            // 이벤트 등록
+            document.addEventListener("deviceready", app.start, false);
+            document.addEventListener("resume", app.start, false);
+        },
+
+        start : function() {
+            window.plugins.webintent.getUri(function(url) {
+                if(url !== "") {
+                    app.url = url.replace("itpc", "http");
+                    $('#link_address').text(app.url);
+                    app.getFeedInfo(app.url);
+                }
+            });
+        },
+
+        /** 서버로부터 Feed정보 취득 */
+        getFeedInfo : function(url) {
+            $.get(url,
+                  function(xml) {
+                    //app.feedXML = xml;
+                    //alert(JSON.stringify(xmlToJson(xml)));
+                    app.feedJSON = xmlToJson(xml).rss.channel;
+                    $("#image").attr("src", app.feedJSON.image.url['#text']);
+                    $("#title").text(app.feedJSON.title['#text']);
+                    $("#link").text(app.feedJSON.link['#text']);
+                    $("#link_href").attr("href", app.feedJSON.link['#text']);
+                    $("#language").text(app.feedJSON.language['#text']);
+
+                  },
+                  "xml");
+        },
+
+        resetFeedInfo : function(json) {
+
+        }
+    }
+    app.init();
+
+
+
+
+
+
+
+
+// Changes XML to JSON
+function xmlToJson(xml) {
+
+// Create the return object
+var obj = {};
+
+if (xml.nodeType == 1) { // element
+// do attributes
+if (xml.attributes.length > 0) {
+//obj["attributes"] = {};
+for (var j = 0; j < xml.attributes.length; j++) {
+var attribute = xml.attributes.item(j);
+//obj["attributes"][attribute.nodeName] = attribute.nodeValue;
+obj[attribute.nodeName] = attribute.nodeValue;
+}
+}
+} else if (xml.nodeType == 3) { // text
+obj = xml.nodeValue.trim(); // add trim here
+}
+
+// do children
+if (xml.hasChildNodes()) {
+for(var i = 0; i < xml.childNodes.length; i++) {
+var item = xml.childNodes.item(i);
+var nodeName = item.nodeName;
+if (typeof(obj[nodeName]) == "undefined") {
+var tmp = xmlToJson(item);
+if(tmp != "") // if not empty string
+obj[nodeName] = tmp;
+} else {
+if (typeof(obj[nodeName].push) == "undefined") {
+var old = obj[nodeName];
+obj[nodeName] = [];
+obj[nodeName].push(old);
+}
+var tmp = xmlToJson(item);
+if(tmp != "") // if not empty string
+obj[nodeName].push(tmp);
+}
+}
+}
+return obj;
+};
+
+
+
+
+
+</script>
+</body>
+</html>
+
