@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Bootstrap -->
-    <link href="libs/bootstrap/bootstrap.css" rel="stylesheet" media="screen">
+    <link href="libs/bootstrap/css/bootstrap.css" rel="stylesheet" media="screen">
 </head>
 <body>
 <div class="page-header">
@@ -34,9 +34,10 @@
         </tr>
     </table>
     <p>
-        <button type="button" id="item1" class="btn btn-primary btn-block">Default button</button>
-        <button type="button" id="item2" class="btn btn-default btn-block">Default button</button>
-        <button type="button" id="item3" class="btn btn-default btn-block">Default button</button>
+        <button type="button" id="item1" class="btn btn-success btn-block">Default button</button>
+        <button type="button" id="item2" class="btn btn-success btn-block">Default button</button>
+        <button type="button" id="item3" class="btn btn-success btn-block">Default button</button>
+        <button type="button" id="item_all" class="btn btn-primary btn-block">전체 다운로드</button>
     </p>
 
     <label class="checkbox-inline">
@@ -44,18 +45,17 @@
     </label>
 
 </div>
+<br/>
 
 <div class="navbar navbar-fixed-bottom">
-    <button type="button" class="btn btn-primary btn-large btn-block">전체 다운로드</button>
-    <div class="btn-group">
+
+    <div class="btn-group" >
         <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-ok"></span>저장</button>
-        <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-remove"></span>삭제</button>
-        <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-share-alt"></span>취소</button>
     </div>
 </div>
 <script src="libs/jquery.min.js"></script>
 <script src="libs/sugar.min.js"></script>
-<script src="libs/bootstrap/bootstrap.min.js"></script>
+<script src="libs/bootstrap/js/bootstrap.min.js"></script>
 
 <script type="text/javascript" src="js/cordova-2.7.0.js"></script>
 <script type="text/javascript" src="js/webintent.js"></script>
@@ -90,9 +90,9 @@ var app = {
                 $("#link_href").attr("href", app.feedJSON.link);
                 $("#language").text(app.feedJSON.language);
 
-                $("#item1").text(app.feedJSON.item.title);
-                $("#item2").text(app.feedJSON.item.title);
-                $("#item3").text(app.feedJSON.item.title);
+                $("#item1").text(app.feedJSON.item[0].title);
+                $("#item2").text(app.feedJSON.item[1].title);
+                $("#item3").text(app.feedJSON.item[2].title);
               },
               "xml");
     },
