@@ -33,10 +33,7 @@
             <td colspan="2"><a href="" id="link_href"><small id="link"></small></a></td>
         </tr>
     </table>
-    <p>
-        <button type="button" id="item1" class="btn btn-success btn-block">Default button</button>
-        <button type="button" id="item2" class="btn btn-success btn-block">Default button</button>
-        <button type="button" id="item3" class="btn btn-success btn-block">Default button</button>
+    <p id="download_buttons">
         <button type="button" id="item_all" class="btn btn-primary btn-block">전체 다운로드</button>
     </p>
 
@@ -57,8 +54,9 @@
 <script src="libs/sugar.min.js"></script>
 <script src="libs/bootstrap/js/bootstrap.min.js"></script>
 
-<script type="text/javascript" src="js/cordova-2.7.0.js"></script>
-<script type="text/javascript" src="js/webintent.js"></script>
+<script type="text/javascript" src="libs/phonegap/cordova-2.7.0.js"></script>
+<script type="text/javascript" src="libs/phonegap/webintent.js"></script>
+<script type="text/javascript" src="js/fileutil.js"></script>
 <script type="text/javascript">
 var app = {
     init : function() {
@@ -80,7 +78,7 @@ var app = {
     /** 서버로부터 Feed정보 취득 */
     getFeedInfo : function(url) {
         $.get(url,
-              function(xml) {
+            function(xml) {
                 //app.feedXML = xml;
                 //alert(JSON.stringify(xml2Obj(xml)));
                 app.feedJSON = xml2Obj(xml).rss.channel;
@@ -90,10 +88,21 @@ var app = {
                 $("#link_href").attr("href", app.feedJSON.link);
                 $("#language").text(app.feedJSON.language);
 
-                $("#item1").text(app.feedJSON.item[0].title);
-                $("#item2").text(app.feedJSON.item[1].title);
-                $("#item3").text(app.feedJSON.item[2].title);
-              },
+
+
+                var item = null;
+                var $download_buttons = $('#download_buttons');
+                for (var ind in app.feedJSON.item) {
+                    var item = app.feedJSON.item[ind];
+
+                    //var extend = item.link.substring(item.link.lastIndexOf('.')+1);
+
+                    $('<button type="button" class="btn btn-block"></button>').html(item.title + '<br/>' + item.guid).appendTo($download_buttons)
+                        .click(function() {
+
+                        });
+                }
+            },
               "xml");
     },
 
@@ -101,8 +110,11 @@ var app = {
 
     }
 }
+FileUtil.init();
 app.init();
 
+//TODO test
+app.getFeedInfo("./J_sFFZRQVNZNT.xml");
 
 // Changes XML to JSON
 function xml2Obj (oXMLNode) {
