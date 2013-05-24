@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Feed Add</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link href="libs/bootstrap/css/bootstrap.css" rel="stylesheet" media="screen">
+</head>
+<body>
+<div class="page-header">
+    <h1>FEED 정보<small>추가</small></h1>
+</div>
+
+<div class="panel">
+    <!-- Default panel contents -->
+    <div class="panel-heading">취득한 링크</div>
+    <p id="link_address"></p>
+
+    <!-- List group -->
+    <table class="table table-hover">
+        <tr>
+            <td rowspan="3"><img src="" id="image" /></td>
+            <td>FEED 정보</td>
+        </tr>
+        <tr>
+            <td><small id="title"></small></td>
+        </tr>
+        <tr>
+            <td>언어 <small id="language"></small></td>
+        </tr>
+        <tr>
+            <td colspan="2"><a href="" id="link_href"><small id="link"></small></a></td>
+        </tr>
+    </table>
+    <p id="download_buttons">
+        <button type="button" id="item_all" class="btn btn-primary btn-block">전체 다운로드</button>
+    </p>
+
+    <label class="checkbox-inline">
+        <input type="checkbox" id="isAutoDownload" value="true"> 신간이 있을 경우 자동 다운로드
+    </label>
+
+</div>
+<br/>
+
+<div class="navbar navbar-fixed-bottom">
+
+    <div class="btn-group" >
+        <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-ok"></span>저장</button>
+    </div>
+</div>
+<script src="libs/jquery.min.js"></script>
+<script src="libs/sugar.min.js"></script>
+<script src="libs/bootstrap/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="libs/phonegap/cordova-2.7.0.js"></script>
+<script type="text/javascript" src="libs/phonegap/webintent.js"></script>
+<script type="text/javascript" src="js/fileutil.js"></script>
+<script type="text/javascript" src="js/feedutil.js"></script>
+<script type="text/javascript">
+var app = {
+    init : function() {
+        // 이벤트 등록
+        // イベント登録
+
+        // JMH가 최초로 기동했을때의 처리를 등록(이벤트쪽은 정확히 디버그해보지 않았음)
+        // JMHの最初起動時の処理を登録(イベント設定の方は詳細に動作確認を行っていない)
+        document.addEventListener("deviceready", app.start, false);
+
+        // JMH가아이들 상태에서 복귀했을 상태일때의 이벤트 등록이겠지?
+        // JMHがアイドル状態から復帰した場合かもね？
+        document.addEventListener("resume", app.start, false);
+    },
+
+    start : function() {
+        // deviceready가 아닌 상태에서 FileUtil을 초기화하면 모듈이 로드가 안됐다고 에라가 떴음.
+        // devicereadyでない状態でFileUtilを初期化するとモジュールがロードされていなかったとエラーが発生。
+        FileUtil.init();
+
+        window.plugins.webintent.getUri(function(url) {
+            // 외부 브라우져에서 링크가 눌렸을 때의 URL정보 취득등을 처리
+            // 外部ブラウザでリンクがクリックされた場合のURL情報を取得して処理
+            // AndroidManifest.xml -> .ItpcClickActivity -> intent-filter 참고
+            if(url !== "") {
+                app.url = url.replace("itpc", "http");
+                $('#link_address').text(app.url);
+                app.getFeedInfo(app.url);
+            }
+        });
+    },
+
+    /** 서버로부터 Feed정보 취득 */
+    getFeedInfo : function(url) {
+        // jquery의 ajax처리로 jw.org로부터 최신의 FEED정보를 가져옴
+        // jqueryのajax処理でjw.orgからFEEDリンクから最新の情報を取得
+        $.get(url,
+            function(xml) {
+                //app.feedXML = xml;
+                //alert(JSON.stringify(xml2Obj(xml)));
+
+                // xml데이터를 json으로 파신한 후 편의상 channel엘리멘트 이하만 캐쉬화
+                // xmlデータをjsonに変換しchannelのみキャッシュー化する。
+                app.feedJSON = xml2Obj(xml).rss.channel;
+
+                // 캐쉬화한 데이터로 부터 화면에 데이터를 표시
+                // キャッシュー化したデータを画面に表示。
+                $("#image").attr("src", app.feedJSON.image ? app.feedJSON.image.url : "");
+                $("#title").text(app.feedJSON.title);
+                $("#link").text(app.feedJSON.link);
+                $("#link_href").attr("href", app.feedJSON.link);
+                $("#language").text(app.feedJSON.language);
+
+                // 다운로드 버튼을 동적으로 만들기.
+                // ダウンロードボタンを動的に作成する。
+                var item = null;
+                var $download_buttons = $('#download_buttons');
+                for (var ind in app.feedJSON.item) {
+                    var item = app.feedJSON.item[ind];
+
+                    $('<button type="button" class="btn btn-block"></button>').data('ind', ind).html(item.title + '<br/>' + item.guid).appendTo($download_buttons)
+                        .click(function(event) {
+                            // 다운로드 버튼을 눌럿을 경우의 동작 핸들러
+                            // ダウンロードボタン押下時のハンドラー
+                            app.linkControl(app.feedJSON.item[$(this).data('ind')]);
+                        });
+                }
+
+
+                $('#item_all').click(function(event) {
+                            // 전체다운로드 버튼 눌렀을때의 처리
+                            // 全体ダウンロードボタン押下時の処理
+
+                            if (!FileUtil.isFile(app.feedJSON.item[0].link)) {
+                                return;
+                            }
+
+                            var job = new Array();
+
+                            function doJob(index) {
+                                var item = app.feedJSON.item[index];
+                                if (!item) {
+                                    return;
+                                }
+                                FileUtil.download(item.link,
+                                                  FileUtil.convertToDirFromFileName(item.guid),
+                                                  function (entry) {
+                                                        doJob(index + 1);
+                                                  }
+                                );
+                            }
+
+                            for (var ind in app.feedJSON.item) {
+
+                                var item = app.feedJSON.item[ind];
+                                FileUtil.download(item.link,
+                                                  FileUtil.convertToDirFromFileName(item.guid)
+                                );
+                            }
+                        });
+            },
+              "xml");
+    },
+
+    linkControl : function(item) {
+        if (FileUtil.isFile(item.link)) {
+            // 다운로드 가능한 파일일 경우 다운로드
+            // ダウンロード可能なファイルの場合ダウンロードする。
+
+            FileUtil.download(item.link, FileUtil.convertToDirFromFileName(item.guid));
+        } else {
+            // 웹페이지 로드
+            // webページをロード
+            location.href = item.link;
+        }
+    },
+
+
+
+    resetFeedInfo : function(json) {
+
+    }
+}
+
+// js처리를 시작함.
+app.init();
+
+//TODO test
+//app.getFeedInfo("./J_sFFZRQVNZNT.xml");
+
+
+</script>
+</body>
+</html>
+
