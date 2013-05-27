@@ -11,16 +11,14 @@ var FileUtil = {
                             function(fileSystem){
                                 util.fileSystem = fileSystem;
                                 //util.rootDirEntry = fileSystem.root;
-                                console.log("root : " + JSON.stringify(util.fileSystem));
-
-
+                                //console.log("root : " + JSON.stringify(util.fileSystem));
                                 //console.log("util.baseDir : " + JSON.stringify(util.baseDir));
 
                             }, this.onError);
 /*
         window.resolveLocalFileSystemURI(util.baseDir,
                             function(fileEntry){
-                                console.log("fileEntry : " + JSON.stringify(fileEntry));
+                                //console.log("fileEntry : " + JSON.stringify(fileEntry));
                                 util.baseDir = fileEntry.getDirectory(util.baseDirName, {create: true});
 
                             }, this.onError);
@@ -43,6 +41,23 @@ var FileUtil = {
                                         console.log("download complete: " + entry.fullPath);
                                    };
 
+        var $download_progress = $('#download_progress');
+
+        fileTransfer.onprogress = function(progressEvent) {
+            console.log(JSON.stringify(progressEvent));
+            if (progressEvent.lengthComputable) {
+                var perc = Math.floor(progressEvent.loaded / progressEvent.total * 100);
+                $download_progress.html(perc + "% loaded...");
+            } else {
+                if(statusDom.innerHTML == "") {
+                    $download_progress.html("Loading");
+                } else {
+                    $download_progress.html(statusDom.innerHTML += ".");
+                }
+            }
+        };
+
+
         fileTransfer.download(
             eURI,
             util.baseDir + filePath,
@@ -55,8 +70,9 @@ var FileUtil = {
         );
     },
 
-    getExtension : function(fileName) {
-        return fileName.substring(fileName.lastIndexOf('.')+1);
+    getExtension : function(fileName, splitChar) {
+        splitChar = splitChar | '.';
+        return fileName.substring(fileName.lastIndexOf(splitChar)+1);
     },
 
     isFile : function(url) {
@@ -75,6 +91,13 @@ var FileUtil = {
             // KO/2013_07/pdf/w_KO_20130715.pdf
             return dir + "/" + fileName;
         }
-        return
+    },
+
+    convertToDirFromLink : function(linkStr) {
+        var fileName = this.getExtension(linkStr, '/');
+        var category = linkStr.match(/media_[a-z]+[/]/g);
+
+        console.log(" category + fileName" + category + fileName);
+        return category + fileName;
     }
 }

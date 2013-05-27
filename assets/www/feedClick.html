@@ -9,45 +9,52 @@
 </head>
 <body>
 <div class="page-header">
-    <h1>FEED 정보<small>추가</small></h1>
+    <h1 data><font id="t_feed_info1">FEED 정보</font><small><font id="t_feed_is_new">등록</font></small></h1>
 </div>
 
 <div class="panel">
     <!-- Default panel contents -->
-    <div class="panel-heading">취득한 링크</div>
+    <div class="panel-heading"><font id="t_picked_feed_ilink">취득한 링크</font></div>
     <p id="link_address"></p>
 
     <!-- List group -->
     <table class="table table-hover">
         <tr>
             <td rowspan="3"><img src="" id="image" /></td>
-            <td>FEED 정보</td>
+            <td><font id="t_feed_info2">FEED 정보</font></td>
         </tr>
         <tr>
             <td><small id="title"></small></td>
         </tr>
         <tr>
-            <td>언어 <small id="language"></small></td>
+            <td><font id="t_language">언어</font> <small id="language"></small></td>
         </tr>
         <tr>
             <td colspan="2"><a href="" id="link_href"><small id="link"></small></a></td>
         </tr>
     </table>
+
+    <p id="download_progress"></p>
+
     <p id="download_buttons">
-        <button type="button" id="item_all" class="btn btn-primary btn-block">전체 다운로드</button>
+        <button type="button" id="item_all" class="btn btn-primary btn-block"><font id="t_download_all">전체 다운로드</font></button>
     </p>
 
     <label class="checkbox-inline">
-        <input type="checkbox" id="isAutoDownload" value="true"> 신간이 있을 경우 자동 다운로드
+        <input type="checkbox" id="is_auto_download" value="true"><font id="t_auto_download">신간이 있을 경우 자동 다운로드</font>
     </label>
-
+    <br/>
+    <label class="checkbox-inline">
+        <input type="checkbox" id="is_auto_notification" value="true"><font id="t_auto_notification">신간이 있을 경우 상단에 표시</font>
+    </label>
 </div>
 <br/>
 
 <div class="navbar navbar-fixed-bottom">
 
-    <div class="btn-group" >
-        <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-ok"></span>저장</button>
+    <div class="" >
+        <button type="button" class="btn btn-primary"><span class="glyphicon glyphicon-ok"></span><font id="t_save_button">저장</font></button>
+        <button type="button" class="btn btn-primary"><span class="glyphicon glyphicon-trash"></span><font id="t_delete_button">삭제</font></button>
     </div>
 </div>
 <script src="libs/jquery.min.js"></script>
@@ -56,6 +63,8 @@
 
 <script type="text/javascript" src="libs/phonegap/cordova-2.7.0.js"></script>
 <script type="text/javascript" src="libs/phonegap/webintent.js"></script>
+
+<script type="text/javascript" src="js/setup.js"></script>
 <script type="text/javascript" src="js/fileutil.js"></script>
 <script type="text/javascript" src="js/feedutil.js"></script>
 <script type="text/javascript">
@@ -74,6 +83,9 @@ var app = {
     },
 
     start : function() {
+
+        Setup.init().convert('feedClick');
+
         // deviceready가 아닌 상태에서 FileUtil을 초기화하면 모듈이 로드가 안됐다고 에라가 떴음.
         // devicereadyでない状態でFileUtilを初期化するとモジュールがロードされていなかったとエラーが発生。
         FileUtil.init();
@@ -143,7 +155,7 @@ var app = {
                                     return;
                                 }
                                 FileUtil.download(item.link,
-                                                  FileUtil.convertToDirFromFileName(item.guid),
+                                                  FileUtil.convertToDirFromLink(item.link),
                                                   function (entry) {
                                                         doJob(index + 1);
                                                   }
@@ -154,7 +166,7 @@ var app = {
 
                                 var item = app.feedJSON.item[ind];
                                 FileUtil.download(item.link,
-                                                  FileUtil.convertToDirFromFileName(item.guid)
+                                                  FileUtil.convertToDirFromLink(item.link)
                                 );
                             }
                         });
@@ -167,7 +179,7 @@ var app = {
             // 다운로드 가능한 파일일 경우 다운로드
             // ダウンロード可能なファイルの場合ダウンロードする。
 
-            FileUtil.download(item.link, FileUtil.convertToDirFromFileName(item.guid));
+            FileUtil.download(item.link, FileUtil.convertToDirFromLink(item.link));
         } else {
             // 웹페이지 로드
             // webページをロード
@@ -181,6 +193,8 @@ var app = {
 
     }
 }
+
+
 
 // js처리를 시작함.
 app.init();

@@ -1,0 +1,14 @@
+{
+    "feedClick" : {
+        "t_feed_info1" : "FEED 정보",
+        "t_feed_is_new" : "등록",
+        "t_picked_feed_ilink" : "취득한 링크",
+        "t_feed_info2" : "FEED 정보",
+        "t_language" : "언어",
+        "t_download_all" : "전체 다운로드",
+        "t_auto_download" : "신간이 있을 경우 자동 다운로드",
+        "t_auto_notification" : "신간이 있을 경우 상단에 표시",
+        "t_save_button" : "저장",
+        "t_delete_button" : "삭제"
+    }
+}
