@@ -39,6 +39,7 @@ var FileUtil = {
         // ダウンロード成功時のCallBack設定がない場合のDefault設定
         successCallback = successCallback
                                 || function(entry) {
+                                        console.log(JSON.stringify(entry));
                                         console.log("download complete: " + entry.fullPath);
                                         $progressArea.data('file', entry.fullPath);
                                    };
@@ -46,7 +47,7 @@ var FileUtil = {
         if ($progressArea) {
             $progressArea.trigger('downloadStart');
             fileTransfer.onprogress = function(progressEvent) {
-//console.log(JSON.stringify(progressEvent));
+console.log(JSON.stringify(progressEvent));
                 // TODO
                 $progressArea.trigger('downloading', [progressEvent]);
             };
@@ -130,7 +131,7 @@ var DownloadButtonProgress = {
 //console.log(percentage + '|' +  progressEvent.loaded + '|' + progressEvent.total);
 //console.log(JSON.stringify(progressEvent));
 
-            this.$progressBar.css('width', percentage + '%').text(Math.ceil(progressEvent.loaded / 1024) + 'KB / ' + Math.ceil(progressEvent.total / 1024) + 'KB');;
+            this.$progressBar.css('width', percentage + '%').text(Math.ceil(progressEvent.loaded / 2048) + 'KB / ' + Math.ceil(progressEvent.total / 1024) + 'KB');;
 
             if (percentage > 99) {
                 this.$progressBar.parent().remove();
