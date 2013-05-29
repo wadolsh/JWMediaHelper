@@ -34,8 +34,6 @@
         </tr>
     </table>
 
-    <p id="download_progress"></p>
-
     <p id="download_buttons">
         <button type="button" id="item_all" class="btn btn-primary btn-block"><font id="t_download_all">전체 다운로드</font></button>
     </p>
@@ -53,10 +51,12 @@
 <div class="navbar navbar-fixed-bottom">
 
     <div class="" >
-        <button type="button" class="btn btn-primary"><span class="glyphicon glyphicon-ok"></span><font id="t_save_button">저장</font></button>
-        <button type="button" class="btn btn-primary"><span class="glyphicon glyphicon-trash"></span><font id="t_delete_button">삭제</font></button>
+        <button type="button" class="btn btn-primary" id="feed_url_save"><span class="glyphicon glyphicon-ok"></span><font id="t_save_button">저장</font></button>
+        <button type="button" class="btn btn-primary" id="feed_url_delete"><span class="glyphicon glyphicon-trash"></span><font id="t_delete_button">삭제</font></button>
     </div>
 </div>
+
+
 <script src="libs/jquery.min.js"></script>
 <script src="libs/sugar.min.js"></script>
 <script src="libs/bootstrap/js/bootstrap.min.js"></script>
@@ -69,6 +69,10 @@
 <script type="text/javascript" src="js/feedutil.js"></script>
 <script type="text/javascript">
 var app = {
+
+    feedJSON : null,
+    feedLinks : new LocalStorageJsonData('feedLinks'),
+
     init : function() {
         // 이벤트 등록
         // イベント登録
@@ -100,6 +104,23 @@ var app = {
                 app.getFeedInfo(app.url);
             }
         });
+
+        app.setEvent();
+    },
+
+    setEvent : function() {
+        var app = this;
+        $('#feed_url_save').click(function(event) {
+            util.feedLinks.data[app.feedJSON.description] = {
+                link : app.url,
+                finalPubDate : app.feedJSON.item[0].pubDate
+            };
+            util.feedLinks.save();
+        });
+
+        $('#feed_url_delete').click(function(event) {
+            delete util.feedLinks.data[app.feedJSON.description];
+        });
     },
 
     /** 서버로부터 Feed정보 취득 */
@@ -127,17 +148,16 @@ var app = {
                 // ダウンロードボタンを動的に作成する。
                 var item = null;
                 var $download_buttons = $('#download_buttons');
-                for (var ind in app.feedJSON.item) {
-                    var item = app.feedJSON.item[ind];
-
-                    $('<button type="button" class="btn btn-block"></button>').data('ind', ind).html(item.title + '<br/>' + item.guid).appendTo($download_buttons)
-                        .click(function(event) {
-                            // 다운로드 버튼을 눌럿을 경우의 동작 핸들러
-                            // ダウンロードボタン押下時のハンドラー
-                            app.linkControl(app.feedJSON.item[$(this).data('ind')]);
-                        });
-                }
-
+                $.each(app.feedJSON.item, function(ind, item) {
+                    var $button = $('<button type="button" class="btn btn-block"></button>');
+                    $button.data('ind', ind).html(item.title + '<br/>' + item.guid).appendTo($download_buttons)
+                                    .click(function(event) {
+                                        // 다운로드 버튼을 눌럿을 경우의 동작 핸들러
+                                        // ダウンロードボタン押下時のハンドラー
+                                        app.linkControl(app.feedJSON.item[$(this).data('ind')], $button);
+                                    }).on('downloadStart', DownloadButtonProgress.downloadStart)
+                                    .on('downloading', DownloadButtonProgress.downloading);
+                });
 
                 $('#item_all').click(function(event) {
                             // 전체다운로드 버튼 눌렀을때의 처리
@@ -156,41 +176,46 @@ var app = {
                                 }
                                 FileUtil.download(item.link,
                                                   FileUtil.convertToDirFromLink(item.link),
+                                                  $('#download_buttons button[data-ind="' + index + '"]'),
                                                   function (entry) {
                                                         doJob(index + 1);
                                                   }
                                 );
                             }
 
-                            for (var ind in app.feedJSON.item) {
-
-                                var item = app.feedJSON.item[ind];
+                            $.each(app.feedJSON.item, function(index, item) {
                                 FileUtil.download(item.link,
                                                   FileUtil.convertToDirFromLink(item.link)
                                 );
-                            }
+                            });
                         });
             },
               "xml");
     },
 
-    linkControl : function(item) {
+    linkControl : function(item, $progressArea) {
+        var finishedFile = $progressArea.data('file');
+        if (finishedFile) {
+        alert(finishedFile);
+            window.plugins.webintent.startActivity({
+                action: window.plugins.webintent.ACTION_VIEW,
+                url: finishedFile,
+                type : "application/pdf"},
+                function() {},
+                function() {alert('Failed to open URL via Android Intent')}
+            );
+            return;
+        }
+
         if (FileUtil.isFile(item.link)) {
             // 다운로드 가능한 파일일 경우 다운로드
             // ダウンロード可能なファイルの場合ダウンロードする。
-
-            FileUtil.download(item.link, FileUtil.convertToDirFromLink(item.link));
+            FileUtil.download(item.link, FileUtil.convertToDirFromLink(item.link), $progressArea);
         } else {
             // 웹페이지 로드
             // webページをロード
             location.href = item.link;
         }
-    },
-
-
-
-    resetFeedInfo : function(json) {
-
     }
 }
 
