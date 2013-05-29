@@ -196,10 +196,9 @@ var app = {
     linkControl : function(item, $progressArea) {
         var finishedFile = $progressArea.data('file');
         if (finishedFile) {
-
             window.plugins.webintent.startActivity({
                 "action" : "android.intent.action.SEND",
-                "type" : "application/*",
+                "type" : "application/" + FileUtil.getExtension(finishedFile),
                 "url" : finishedFile},
                 function() {},
                 function() {alert('Failed to open URL via Android Intent')}
