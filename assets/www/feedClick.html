@@ -199,7 +199,7 @@ var app = {
 
             window.plugins.webintent.startActivity({
                 "action" : "android.intent.action.SEND",
-                //"type" : "application/*",
+                "type" : "application/*",
                 "url" : finishedFile},
                 function() {},
                 function() {alert('Failed to open URL via Android Intent')}
