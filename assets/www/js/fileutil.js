@@ -40,6 +40,7 @@ var FileUtil = {
         successCallback = successCallback
                                 || function(entry) {
                                         console.log("download complete: " + entry.fullPath);
+                                        $progressArea.data('file', entry.fullPath);
                                    };
 
         if ($progressArea) {
@@ -127,12 +128,13 @@ var DownloadButtonProgress = {
             var percentage = Math.ceil(progressEvent.loaded / (progressEvent.total * 2) * 100);
 
 //console.log(percentage + '|' +  progressEvent.loaded + '|' + progressEvent.total);
+//console.log(JSON.stringify(progressEvent));
 
             this.$progressBar.css('width', percentage + '%').text(Math.ceil(progressEvent.loaded / 1024) + 'KB / ' + Math.ceil(progressEvent.total / 1024) + 'KB');;
 
             if (percentage > 99) {
                 this.$progressBar.parent().remove();
-                $(this).addClass('btn-success');
+                $(this).addClass('btn-success'); //.data('file', '');
             }
         } else {
             if(statusDom.innerHTML == "") {
