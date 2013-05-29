@@ -1,25 +1,26 @@
 var FileUtil = {
     fileExtend : "pdf,epub,mp3,m4b",
     fileSystem : null,
-    baseDirName : "jw_media",
-    baseDir : "file:///mnt/sdcard/jw_media/",
-
+    rootDirEntry : null,
+    baseMediaDirName : "jw_media",
+    baseMediaDir : "file:///mnt/sdcard/jw_media/",
 
     init : function() {
         var util = this;
         window.requestFileSystem(LocalFileSystem.PERSISTENT, 0,
                             function(fileSystem){
                                 util.fileSystem = fileSystem;
-                                //util.rootDirEntry = fileSystem.root;
-                                //console.log("root : " + JSON.stringify(util.fileSystem));
-                                //console.log("util.baseDir : " + JSON.stringify(util.baseDir));
+                                util.rootDirEntry = fileSystem.root;
+                                console.log("root1 : " + JSON.stringify(util.fileSystem));
+                                console.log("root2 : " + JSON.stringify(util.rootDirEntry));
+                                //console.log("util.baseMediaDir : " + JSON.stringify(util.baseMediaDir));
 
                             }, this.onError);
 /*
-        window.resolveLocalFileSystemURI(util.baseDir,
+        window.resolveLocalFileSystemURI(util.baseMediaDir,
                             function(fileEntry){
                                 //console.log("fileEntry : " + JSON.stringify(fileEntry));
-                                util.baseDir = fileEntry.getDirectory(util.baseDirName, {create: true});
+                                util.baseMediaDir = fileEntry.getDirectory(util.baseMediaDirName, {create: true});
 
                             }, this.onError);
 */
@@ -29,7 +30,7 @@ var FileUtil = {
         console.log(evt.target.error.code);
     },
 
-    download : function(uri, filePath, successCallback) {
+    download : function(uri, filePath, $progressArea, successCallback) {
         var util = this;
         var fileTransfer = new FileTransfer();
         var eURI = encodeURI(uri);
@@ -41,26 +42,19 @@ var FileUtil = {
                                         console.log("download complete: " + entry.fullPath);
                                    };
 
-        var $download_progress = $('#download_progress');
-
-        fileTransfer.onprogress = function(progressEvent) {
-            console.log(JSON.stringify(progressEvent));
-            if (progressEvent.lengthComputable) {
-                var perc = Math.floor(progressEvent.loaded / progressEvent.total * 100);
-                $download_progress.html(perc + "% loaded...");
-            } else {
-                if(statusDom.innerHTML == "") {
-                    $download_progress.html("Loading");
-                } else {
-                    $download_progress.html(statusDom.innerHTML += ".");
-                }
-            }
-        };
+        if ($progressArea) {
+            $progressArea.trigger('downloadStart');
+            fileTransfer.onprogress = function(progressEvent) {
+//console.log(JSON.stringify(progressEvent));
+                // TODO
+                $progressArea.trigger('downloading', [progressEvent]);
+            };
+        }
 
 
         fileTransfer.download(
             eURI,
-            util.baseDir + filePath,
+            util.baseMediaDir + filePath,
             successCallback,
             function(error) {
                 console.log("download error source " + error.source);
@@ -68,10 +62,11 @@ var FileUtil = {
                 console.log("upload error code" + error.code);
             }
         );
+        return fileTransfer;
     },
 
     getExtension : function(fileName, splitChar) {
-        splitChar = splitChar | '.';
+        splitChar = splitChar || '.';
         return fileName.substring(fileName.lastIndexOf(splitChar)+1);
     },
 
@@ -89,15 +84,62 @@ var FileUtil = {
             return dir + fnArray[0] + "/" + fileName;
         } else {
             // KO/2013_07/pdf/w_KO_20130715.pdf
-            return dir + "/" + fileName;
+            return dir + fileName;
         }
     },
 
     convertToDirFromLink : function(linkStr) {
         var fileName = this.getExtension(linkStr, '/');
         var category = linkStr.match(/media_[a-z]+[/]/g);
+        console.log("dowonload to= " +  category + this.convertToDirFromFileName(fileName));
+        return category + this.convertToDirFromFileName(fileName);
+    },
+/*
+    saveFile : funtion(fileName, data) {
+        var file = this.rootDirEntry.getFile(fileName, {create: true, exclusive: false},
+                        function(fileEntry) {
+                            fileEntry.createWriter(gotFileWriter, fail);
+                        }, fail));
 
-        console.log(" category + fileName" + category + fileName);
-        return category + fileName;
+    },
+
+    getJsonFullPath : function(fileName) {
+        return this.rootDirEntry.fullPath + fileName;
+    }
+
+    readJson : function(fileName, callBack) {
+
+    }
+*/
+}
+
+
+
+var DownloadButtonProgress = {
+
+    downloadStart : function(event) {
+
+        this.$progressBar = $('<div class="progress-bar" style="width: 0%"/>').appendTo($(this)).wrap('<div class="progress progress-striped active"/>');
+    },
+
+    downloading : function(event, progressEvent) {
+        if (progressEvent.lengthComputable) {
+            var percentage = Math.ceil(progressEvent.loaded / (progressEvent.total * 2) * 100);
+
+//console.log(percentage + '|' +  progressEvent.loaded + '|' + progressEvent.total);
+
+            this.$progressBar.css('width', percentage + '%').text(Math.ceil(progressEvent.loaded / 1024) + 'KB / ' + Math.ceil(progressEvent.total / 1024) + 'KB');;
+
+            if (percentage > 99) {
+                this.$progressBar.parent().remove();
+                $(this).addClass('btn-success');
+            }
+        } else {
+            if(statusDom.innerHTML == "") {
+                this.$progressBar.html("Loading");
+            } else {
+                this.$progressBar.html(this.$progressBar.innerHTML += ".");
+            }
+        }
     }
 }
