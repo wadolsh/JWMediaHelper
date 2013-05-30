@@ -111,15 +111,18 @@ var app = {
     setEvent : function() {
         var app = this;
         $('#feed_url_save').click(function(event) {
-            util.feedLinks.data[app.feedJSON.description] = {
+console.log(JSON.stringify(app.feedLinks));
+            app.feedLinks.data[app.feedJSON.description] = {
                 link : app.url,
                 finalPubDate : app.feedJSON.item[0].pubDate
             };
-            util.feedLinks.save();
+            app.feedLinks.save();
+
         });
 
         $('#feed_url_delete').click(function(event) {
-            delete util.feedLinks.data[app.feedJSON.description];
+            delete app.feedLinks.data[app.feedJSON.description];
+            app.feedLinks.save();
         });
     },
 
@@ -148,15 +151,28 @@ var app = {
                 // ダウンロードボタンを動的に作成する。
                 var item = null;
                 var $download_buttons = $('#download_buttons');
+                var buttonArray = new Array();
                 $.each(app.feedJSON.item, function(ind, item) {
+
                     var $button = $('<button type="button" class="btn btn-block"></button>');
+                    buttonArray.push($button);
                     $button.data('ind', ind).html(item.title + '<br/>' + item.guid).appendTo($download_buttons)
                                     .click(function(event) {
                                         // 다운로드 버튼을 눌럿을 경우의 동작 핸들러
                                         // ダウンロードボタン押下時のハンドラー
-                                        app.linkControl(app.feedJSON.item[$(this).data('ind')], $button);
+                                        //app.linkControl(app.feedJSON.item[$(this).data('ind')], $button);
+                                        app.linkControl(item, $button);
                                     }).on('downloadStart', DownloadButtonProgress.downloadStart)
                                     .on('downloading', DownloadButtonProgress.downloading);
+
+                    FileUtil.getFileFromLink(item.link, function(file) {
+//console.log(JSON.stringify(item));
+                        if (file.size == item.enclosure["@attributes"].length) {
+                            // ファイルが存在する場合
+                            $button.data('file', file.fullPath).addClass('btn-success');
+                        }
+                    });
+
                 });
 
                 $('#item_all').click(function(event) {
@@ -170,24 +186,25 @@ var app = {
                             var job = new Array();
 
                             function doJob(index) {
+
                                 var item = app.feedJSON.item[index];
                                 if (!item) {
                                     return;
                                 }
-                                FileUtil.download(item.link,
-                                                  FileUtil.convertToDirFromLink(item.link),
-                                                  $('#download_buttons button[data-ind="' + index + '"]'),
-                                                  function (entry) {
-                                                        doJob(index + 1);
-                                                  }
-                                );
-                            }
 
-                            $.each(app.feedJSON.item, function(index, item) {
-                                FileUtil.download(item.link,
-                                                  FileUtil.convertToDirFromLink(item.link)
-                                );
-                            });
+                                if (buttonArray[index].hasClass('btn-success')) {
+                                    doJob(index + 1);
+                                } else {
+                                    FileUtil.download(item.link,
+                                                        FileUtil.convertToDirFromLink(item.link),
+                                                        buttonArray[index],
+                                                        function (entry) {
+                                                            doJob(index + 1);
+                                                        }
+                                    );
+                                }
+                            }
+                            doJob(0);
                         });
             },
               "xml");
@@ -198,7 +215,7 @@ var app = {
         if (finishedFile) {
             window.plugins.webintent.startActivity({
                 "action" : "android.intent.action.VIEW",
-                "type" : "application/" + FileUtil.getExtension(finishedFile),
+                "type" : item.enclosure["@attributes"].type,
                 "url" : finishedFile},
                 function() {},
                 function() {alert('Failed to open URL via Android Intent')}

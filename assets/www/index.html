@@ -41,10 +41,26 @@
             <a href="http://www.jw.org/ko/news/rss/LatestNewsList/feed.xml" />NEWS_FEED</a><br/><br/>
 
         </div>
-        <script type="text/javascript" src="cordova-2.7.0.js"></script>
-        <script type="text/javascript" src="js/index.js"></script>
+        <!--<script type="text/javascript" src="js/index.js"></script>-->
+
+
+        <script type="text/javascript" src="libs/phonegap/cordova-2.7.0.js"></script>
+        <script type="text/javascript" src="libs/phonegap/webintent.js"></script>
+        <script src="libs/jquery.min.js"></script>
+        <script src="libs/bootstrap/js/bootstrap.min.js"></script>
+
+        <script type="text/javascript" src="js/setup.js"></script>
+        <script type="text/javascript" src="js/fileutil.js"></script>
+        <script type="text/javascript" src="js/feedutil.js"></script>
         <script type="text/javascript">
-            app.initialize();
+            document.addEventListener("deviceready", onDeviceReady, false);
+
+            function onDeviceReady() {
+                FileUtil.getBaseMediaDirTree();
+
+                var fullTree = new FileTreeInfo(FileUtil.baseMediaDir);
+                console.log(fullTree.tree);
+            }
         </script>
     </body>
 </html>

@@ -62,13 +62,20 @@ LocalStorageJsonData.prototype = {
 
     load : function() {
         this.data = JSON.parse(window.localStorage.getItem(this.keyName));
+        if (!this.data) {
+            this.data = {};
+        }
     },
 
     save : function() {
         window.localStorage.setItem(this.keyName, JSON.stringify(this.data));
+        this.load();
+console.log(JSON.stringify(this.data));
     },
 
     remove : function() {
         window.localStorage.removeItem(this.keyName);
+        this.load();
+console.log(JSON.stringify(this.data));
     }
 }

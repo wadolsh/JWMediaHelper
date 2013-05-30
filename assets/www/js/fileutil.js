@@ -3,7 +3,8 @@ var FileUtil = {
     fileSystem : null,
     rootDirEntry : null,
     baseMediaDirName : "jw_media",
-    baseMediaDir : "file:///mnt/sdcard/jw_media/",
+    baseMediaDir : "file:///mnt/sdcard/jw_media",
+    downloading : new Array(),
 
     init : function() {
         var util = this;
@@ -11,43 +12,43 @@ var FileUtil = {
                             function(fileSystem){
                                 util.fileSystem = fileSystem;
                                 util.rootDirEntry = fileSystem.root;
-                                console.log("root1 : " + JSON.stringify(util.fileSystem));
-                                console.log("root2 : " + JSON.stringify(util.rootDirEntry));
+                                //console.log("root1 : " + JSON.stringify(util.fileSystem));
+                                //console.log("root2 : " + JSON.stringify(fileSystem.root));
                                 //console.log("util.baseMediaDir : " + JSON.stringify(util.baseMediaDir));
 
-                            }, this.onError);
+                            }, this.fail);
 /*
         window.resolveLocalFileSystemURI(util.baseMediaDir,
                             function(fileEntry){
                                 //console.log("fileEntry : " + JSON.stringify(fileEntry));
                                 util.baseMediaDir = fileEntry.getDirectory(util.baseMediaDirName, {create: true});
 
-                            }, this.onError);
+                            }, this.fail);
 */
     },
 
-    onError : function(evt){
+    fail : function(evt){
         console.log(evt.target.error.code);
     },
 
     download : function(uri, filePath, $progressArea, successCallback) {
         var util = this;
-        var fileTransfer = new FileTransfer();
         var eURI = encodeURI(uri);
+        var fileTransfer = new FileTransfer();
 
         // 다운로드 성공시의 콜백이 없는경우 기본 콜백을 설정
         // ダウンロード成功時のCallBack設定がない場合のDefault設定
         successCallback = successCallback
                                 || function(entry) {
-                                        console.log(JSON.stringify(entry));
+                                        //console.log(JSON.stringify(entry));
                                         console.log("download complete: " + entry.fullPath);
                                         $progressArea.data('file', entry.fullPath);
                                    };
 
         if ($progressArea) {
-            $progressArea.trigger('downloadStart');
+            $progressArea.trigger('downloadStart', [fileTransfer]);
             fileTransfer.onprogress = function(progressEvent) {
-console.log(JSON.stringify(progressEvent));
+//console.log(JSON.stringify(progressEvent));
                 // TODO
                 $progressArea.trigger('downloading', [progressEvent]);
             };
@@ -56,7 +57,7 @@ console.log(JSON.stringify(progressEvent));
 
         fileTransfer.download(
             eURI,
-            util.baseMediaDir + filePath,
+            util.getFullPath(filePath),
             successCallback,
             function(error) {
                 console.log("download error source " + error.source);
@@ -64,7 +65,15 @@ console.log(JSON.stringify(progressEvent));
                 console.log("upload error code" + error.code);
             }
         );
+
+        // ダウンロードを開始したオブジェクトを格納
+        this.downloading.push(fileTransfer);
+
         return fileTransfer;
+    },
+
+    getFullPath : function(filePath) {
+        return this.baseMediaDir + '/' + filePath;
     },
 
     getExtension : function(fileName, splitChar) {
@@ -93,9 +102,40 @@ console.log(JSON.stringify(progressEvent));
     convertToDirFromLink : function(linkStr) {
         var fileName = this.getExtension(linkStr, '/');
         var category = linkStr.match(/media_[a-z]+[/]/g);
-        console.log("dowonload to= " +  category + this.convertToDirFromFileName(fileName));
+//console.log("local file path = " +  category + this.convertToDirFromFileName(fileName));
         return category + this.convertToDirFromFileName(fileName);
     },
+
+
+    getFileEntry : function(fullPath) {
+        var fileName = fullPath.substring(fullPath.lastIndexOf('/')+1);
+        return new FileEntry(fileName, fullPath);
+    },
+
+    getFile : function(fullPath, callback) {
+        var fileEntry = this.getFileEntry(fullPath);
+        fileEntry.file(callback, this.fail);
+    },
+
+    getFileFromLink : function(linkStr, callback) {
+        return this.getFile(this.getFullPath(this.convertToDirFromLink(linkStr)), callback);
+    },
+
+    getDirEntry : function(fullPath) {
+        var dirName = fullPath.substring(fullPath.lastIndexOf('/')+1);
+
+        return new DirectoryEntry(dirName, fullPath);
+    },
+
+    getDirSubEntrys : function(fullPath, callback) {
+
+        var dirEntry = this.getDirEntry(fullPath);
+        var directoryReader = dirEntry.createReader();
+
+        directoryReader.readEntries(callback, this.fail);
+    },
+
+
 /*
     saveFile : funtion(fileName, data) {
         var file = this.rootDirEntry.getFile(fileName, {create: true, exclusive: false},
@@ -119,9 +159,18 @@ console.log(JSON.stringify(progressEvent));
 
 var DownloadButtonProgress = {
 
-    downloadStart : function(event) {
-
-        this.$progressBar = $('<div class="progress-bar" style="width: 0%"/>').appendTo($(this)).wrap('<div class="progress progress-striped active"/>');
+    downloadStart : function(event, fileTransfer) {
+        var $this = $(this);
+        /*
+        this.$cancelButton = $('<span class="glyphicon glyphicon-remove">cancel</span>').appendTo($this).click(function(event) {
+                // ダウンロード中止ボタン押下時の処理
+                fileTransfer.abort(function(r) {
+ console.log(JSON.stringify(r));
+                }, FileUtil.fail);
+        });
+        */
+        this.fileTransfer = fileTransfer;
+        this.$progressBar = $('<div class="progress-bar" style="width: 0%"/>').appendTo($this).wrap('<div class="progress progress-striped active"/>');
     },
 
     downloading : function(event, progressEvent) {
@@ -135,7 +184,10 @@ var DownloadButtonProgress = {
 
             if (percentage > 99) {
                 this.$progressBar.parent().remove();
+                //this.$cancelButton.remove();
                 $(this).addClass('btn-success'); //.data('file', '');
+
+                FileUtil.downloading.exclude(this.fileTransfer);
             }
         } else {
             if(statusDom.innerHTML == "") {
@@ -146,3 +198,65 @@ var DownloadButtonProgress = {
         }
     }
 }
+
+
+var FileTreeInfo = function(baseFullPath) {
+    this.baseFullPath = baseFullPath;
+    this.fullScan();
+};
+LocalStorageJsonData.prototype = {
+    tree : null,
+
+    fullScan : function() {
+        this.tree = {
+            fullPath : this.baseFullPath,
+            subDirs : {},
+            files : {},
+            size : 0
+        };
+
+        this.addFullScan(this.tree, subDirs, files);
+
+    },
+
+    addFullScan : function(fullPath, subDirs, files) {
+        var tree = this;
+        FileUtil.getDirSubEntrys(fullPath, function(entries) {
+            $.each(entries, function(index, entry) {
+                if (entry.isDirectory) {
+                    subDirs[entry.name] = {
+                        name : entry.name,
+                        fullPath : entry.fullPath,
+                        subDirs : {},
+                        files : {},
+                        size : 0
+                    }
+                    tree.addFullScan(entry.fullPath, subDirs, files);
+
+                } else if (entry.isFile) {
+                    files[entry.name] = {
+                        name : entry.name,
+                        fullPath : entry.fullPath,
+                        size : 0
+                    }
+                }
+            });
+        });
+    }
+
+
+}
+
+
+/*
+
+
+
+
+ [{"isFile":false,"isDirectory":true,"name":"media_magazines","fullPath":"file:///mnt/sdcard/jw_media/media_magazines","filesystem":null},
+ {"isFile":false,"isDirectory":true,"name":"testaaaaa","fullPath":"file:///mnt/sdcard/jw_media/testaaaaa","filesystem":null}]
+
+
+
+
+*/
