@@ -107,23 +107,23 @@ var FileUtil = {
     },
 
 
-    getFileEntry : function(fullPath) {
-        var fileName = fullPath.substring(fullPath.lastIndexOf('/')+1);
+    getFileEntry : function(fullPath, fileName) {
+        fileName = fileName || fullPath.substring(fullPath.lastIndexOf('/')+1);
         return new FileEntry(fileName, fullPath);
     },
 
-    getFile : function(fullPath, callback) {
-        var fileEntry = this.getFileEntry(fullPath);
+    getFile : function(callback, fullPath, fileName) {
+        var fileEntry = this.getFileEntry(fullPath, fileName);
         fileEntry.file(callback, this.fail);
     },
 
-    getFileFromLink : function(linkStr, callback) {
-        return this.getFile(this.getFullPath(this.convertToDirFromLink(linkStr)), callback);
+    getFileFromLink : function(callback, linkStr) {
+        return this.getFile(callback, this.getFullPath(this.convertToDirFromLink(linkStr)));
     },
 
     getDirEntry : function(fullPath) {
+//console.log(fullPath);
         var dirName = fullPath.substring(fullPath.lastIndexOf('/')+1);
-
         return new DirectoryEntry(dirName, fullPath);
     },
 
@@ -204,59 +204,63 @@ var FileTreeInfo = function(baseFullPath) {
     this.baseFullPath = baseFullPath;
     this.fullScan();
 };
-LocalStorageJsonData.prototype = {
+FileTreeInfo.prototype = {
+    baseFullPath : null,
     tree : null,
 
     fullScan : function() {
         this.tree = {
+            name : FileUtil.getExtension(this.baseFullPath, '/'),
             fullPath : this.baseFullPath,
             subDirs : {},
             files : {},
             size : 0
         };
-
-        this.addFullScan(this.tree, subDirs, files);
-
+        this.addFullScan(this.baseFullPath, this.tree, new Array(this.tree));
     },
 
-    addFullScan : function(fullPath, subDirs, files) {
+    addFullScan : function(fullPath, parent, parentArray) {
         var tree = this;
         FileUtil.getDirSubEntrys(fullPath, function(entries) {
             $.each(entries, function(index, entry) {
                 if (entry.isDirectory) {
-                    subDirs[entry.name] = {
+                    var thisDir = parent.subDirs[entry.name] = {
                         name : entry.name,
                         fullPath : entry.fullPath,
                         subDirs : {},
                         files : {},
                         size : 0
                     }
-                    tree.addFullScan(entry.fullPath, subDirs, files);
-
+                    var newParentArray = (new Array(thisDir)).concat(parentArray);
+                    tree.addFullScan(entry.fullPath, thisDir, newParentArray);
                 } else if (entry.isFile) {
-                    files[entry.name] = {
-                        name : entry.name,
-                        fullPath : entry.fullPath,
-                        size : 0
-                    }
+                    FileUtil.getFile(function(file) {
+//console.log(JSON.stringify(file));
+                        parent.files[entry.name] = {
+                            name : file.name,
+                            fullPath : file.fullPath,
+                            size : file.size,
+                            lastModifiedDate : file.lastModifiedDate,
+                            type : file.type
+                        }
+
+                        for (var i in parentArray) {
+                            // すべての親のディレクトリにファイルサイズをプラスしてディレクトリ使用量を計算
+                            parentArray[i].size += file.size;
+                        }
+
+                    }, entry.fullPath, entry.name);
                 }
             });
+
         });
     }
-
-
 }
 
 
 /*
-
-
-
+{"name":"w_KO_20130615.pdf","fullPath":"file:///mnt/sdcard/jw_media/media_magazines/KO/2013_06/pdf/w_KO_20130615.pdf","type":"application/pdf","lastModifiedDate":1369842946000,"size":65079,"start":0,"end":65079}
 
  [{"isFile":false,"isDirectory":true,"name":"media_magazines","fullPath":"file:///mnt/sdcard/jw_media/media_magazines","filesystem":null},
  {"isFile":false,"isDirectory":true,"name":"testaaaaa","fullPath":"file:///mnt/sdcard/jw_media/testaaaaa","filesystem":null}]
-
-
-
-
 */

@@ -29,10 +29,12 @@
     <body>
         <div class="app">
             <h1>Apache Cordova</h1>
-            <div id="deviceready" class="blink">
-                <p class="event listening">Connecting to Device</p>
-                <p class="event received">Device is Ready</p>
+            <div id="button_area" class="">
+                <button type="button" class="btn btn-primary btn-large btn-block">Block level button</button>
+                <button type="button" class="btn btn-default btn-large btn-block">Block level button</button>
             </div>
+
+
             <a href="itpc://www.jw.org/apps/KO_sFFZRQVNZNT?rln=KO&rmn=w&rfm=pdf&rpf=&rpe=" />PDF</a><br/><br/>
             <a href="itpc://www.jw.org/apps/KO_sFFZRQVNZNT?rln=KO&rmn=w&rfm=epub" />EPUB</a><br/><br/>
             <a href="itpc://www.jw.org/apps/KO_sFFZRQVNZNT?rln=KO&rmn=w&rfm=m4b" />AAC</a><br/><br/>
@@ -56,10 +58,9 @@
             document.addEventListener("deviceready", onDeviceReady, false);
 
             function onDeviceReady() {
-                FileUtil.getBaseMediaDirTree();
 
                 var fullTree = new FileTreeInfo(FileUtil.baseMediaDir);
-                console.log(fullTree.tree);
+                console.log(JSON.stringify(fullTree.tree));
             }
         </script>
     </body>

@@ -165,13 +165,13 @@ console.log(JSON.stringify(app.feedLinks));
                                     }).on('downloadStart', DownloadButtonProgress.downloadStart)
                                     .on('downloading', DownloadButtonProgress.downloading);
 
-                    FileUtil.getFileFromLink(item.link, function(file) {
+                    FileUtil.getFileFromLink(function(file) {
 //console.log(JSON.stringify(item));
                         if (file.size == item.enclosure["@attributes"].length) {
                             // ファイルが存在する場合
                             $button.data('file', file.fullPath).addClass('btn-success');
                         }
-                    });
+                    }, item.link);
 
                 });
 
