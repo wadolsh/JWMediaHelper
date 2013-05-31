@@ -1,14 +1,27 @@
 {
+    "index" : {
+        "" : "",
+        "" : "",
+        "" : "",
+        "" : "",
+        "" : "",
+        "" : "",
+        "" : "",
+        "" : "",
+        "" : "",
+        "" : "",
+        "" : "",
+    },
     "feedClick" : {
-        "t_feed_info1" : "FEED 情報",
-        "t_feed_is_new" : "登録",
+        "t_feed_title" : "FEED 情報",
+        "t_feed_titel_small" : "管理",
         "t_picked_feed_ilink" : "取得したリンク",
         "t_feed_info2" : "FEED 情報",
         "t_language" : "言語",
         "t_download_all" : "全体ダウンロード",
         "t_auto_download" : "最新を自動にダウンロード",
         "t_auto_notification" : "最新をお知らせする",
-        "t_save_button" : "SAVE",
-        "t_delete_button" : "削除"
+        "t_save_button" : "FEED SAVE",
+        "t_delete_button" : "FEED 削除"
     }
 }

@@ -22,51 +22,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="libs/bootstrap/css/bootstrap.css" rel="stylesheet" media="screen">
-    <title>Start Page</title>
+    <title>File Explorer</title>
 </head>
 <body>
     <div class="container">
         <div class="page-header">
-            <h1><font id="t_index_title">JW Media Helper  </font><small><font id="t_index_title_small">Testing Version</font></small></h1>
+            <h1><font id="t_index_title">미디어 탐색기  </font><small><font id="t_index_title_small"></font></small></h1>
         </div>
 
         <div class="panel panel-primary">
-            <div class="panel-heading"><font id="t_panel_head_new_dn" class="strong">최근에 다운로드한 미디어</font></div>
+            <div class="panel-heading"><strong><font id="t_panel_head_media_navi">전체 미디어</font></strong></div>
+            <div id="media_base"></div>
         </div>
-
-        <div class="panel panel-primary">
-            <div class="panel-heading"><font id="t_panel_head_recent_open">최근에 실행한 미디어</font></div>
-        </div>
-
-        <div class="list-group">
-            <a href="./fileExplorer.html" class="list-group-item">
-                <font id="t_link_file_explorer">미디어 탐색기</font>
-                <span class="glyphicon glyphicon-chevron-right"></span>
-            </a>
-            <a href="./feedExplorer.html" class="list-group-item">
-                <font id="t_link_feed_explorer">RSS FEED 관리</font>
-                <span class="glyphicon glyphicon-chevron-right"></span>
-            </a>
-            <a href="./setting.html" class="list-group-item">
-                <font id="t_link_setting">설정</font>
-                <span class="glyphicon glyphicon-chevron-right"></span>
-            </a>
-        </div>
-
-
-
-        <div class="panel panel-primary">
-            <div class="panel-heading">TEST LINK</div>
-
-            <a href="itpc://www.jw.org/apps/KO_sFFZRQVNZNT?rln=KO&rmn=w&rfm=pdf&rpf=&rpe=" />PDF</a><br/><br/>
-            <a href="itpc://www.jw.org/apps/KO_sFFZRQVNZNT?rln=KO&rmn=w&rfm=epub" />EPUB</a><br/><br/>
-            <a href="itpc://www.jw.org/apps/KO_sFFZRQVNZNT?rln=KO&rmn=w&rfm=m4b" />AAC</a><br/><br/>
-            <a href="itpc://www.jw.org/apps/KO_sFFZRQVNZNT?rln=KO&rmn=w&rfm=mp3" />MP3</a><br/><br/>
-
-            <a href="http://www.jw.org/ko/news/rss/LatestNewsList/feed.xml" />NEWS_FEED</a><br/><br/>
-        </div>
-
-        </br>
 
         <div class="navbar navbar-fixed-bottom">
             JW Media Helper
@@ -84,6 +51,9 @@
 <script type="text/javascript" src="js/feedutil.js"></script>
 <script type="text/javascript">
 var app = {
+
+    feedLinks : new LocalStorageJsonData('feedLinks'),
+
     init : function() {
         /*
         deviceready
@@ -106,11 +76,16 @@ var app = {
     },
 
     deviceready : function() {
-        Setup.init().convert('index');
+        //Setup.init().convert('fileExplorer');
+
 
         // deviceready가 아닌 상태에서 FileUtil을 초기화하면 모듈이 로드가 안됐다고 에라가 떴음.
         // devicereadyでない状態でFileUtilを初期化するとモジュールがロードされていなかったとエラーが発生。
         FileUtil.init();
+
+        // ディレクトリ内のメディア情報を取得
+        app.fullTree = new FileTreeInfo(FileUtil.baseMediaDir, { $baseTag : $('#media_base'), createMediaTag : app.createMediaTag });
+//console.log(JSON.stringify(app.fullTree.tree));
 
         app.setEvent();
     },
@@ -121,6 +96,26 @@ var app = {
 
     setEvent : function() {
 
+    },
+
+    createMediaTag : function($parent, entry) {
+//console.log(JSON.stringify(entry));
+        var $div = $('<div class="media-content" id=" + entry.name + "/>').html('size : ' + entry.size).appendTo($parent)
+                            .wrap('<div class="media"/>')
+                            .before('<span class="pull-left glyphicon ' + FileUtil.fileExtensionIcon[entry.extension] + '"/>')
+                            .wrap('<div class="media-body"/>')
+                            .before('<h4 class="media-heading">' + entry.name + '</h4>');
+        if (entry.extension == 'dir') {
+            $div.prev().click(function(event) {
+                $div.toggle().parent().prev().toggleClass('glyphicon-folder-close').toggleClass('glyphicon-folder-open');
+            });
+            $div.hide();
+        } else {
+            $div.prev().click(function(event) {
+                FileUtil.exec(entry.fullPath, entry.type);
+            });
+        }
+        return $div;
     }
 }
 

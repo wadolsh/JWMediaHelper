@@ -1,62 +1,61 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Feed Add</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Bootstrap -->
     <link href="libs/bootstrap/css/bootstrap.css" rel="stylesheet" media="screen">
+    <title>Feed Add</title>
 </head>
 <body>
-<div class="page-header">
-    <h1 data><font id="t_feed_info1">FEED 정보</font><small><font id="t_feed_is_new">등록</font></small></h1>
+    <div class="container">
+        <div class="page-header">
+            <h1><font id="t_feed_title">FEED 정보</font><small><font id="t_feed_titel_small">관리</font></small></h1>
+        </div>
+
+        <div class="panel">
+            <!-- Default panel contents -->
+            <div class="panel-heading"><font id="t_picked_feed_ilink">취득한 링크</font></div>
+            <p id="link_address"></p>
+
+            <!-- List group -->
+            <table class="table table-hover">
+                <tr>
+                    <td rowspan="3"><img src="" id="image" /></td>
+                    <td><font id="t_feed_info2">FEED 정보</font></td>
+                </tr>
+                <tr>
+                    <td><small id="title"></small></td>
+                </tr>
+                <tr>
+                    <td><font id="t_language">언어</font> <small id="language"></small></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><a href="" id="link_href"><small id="link"></small></a></td>
+                </tr>
+            </table>
+
+            <button type="button" id="item_all" class="btn btn-primary btn-block"><font id="t_download_all">전체 다운로드</font></button>
+
+            <div id="download_buttons">
+            </div>
+
+            <label class="checkbox-inline">
+                <input type="checkbox" id="is_auto_download" value="true"><font id="t_auto_download">신간이 있을 경우 자동 다운로드</font>
+            </label>
+            <br/>
+            <label class="checkbox-inline">
+                <input type="checkbox" id="is_auto_notification" value="true"><font id="t_auto_notification">신간이 있을 경우 상단에 표시</font>
+            </label>
+        </div>
+        <br/>
+
+        <div class="navbar navbar-fixed-bottom">
+            <div class="" >
+                <button type="button" class="btn btn-primary" id="feed_url_save"><span class="glyphicon glyphicon-ok"></span><font id="t_save_button">저장</font></button>
+                <button type="button" class="btn btn-primary" id="feed_url_delete"><span class="glyphicon glyphicon-trash"></span><font id="t_delete_button">삭제</font></button>
+            </div>
+        </div>
 </div>
-
-<div class="panel">
-    <!-- Default panel contents -->
-    <div class="panel-heading"><font id="t_picked_feed_ilink">취득한 링크</font></div>
-    <p id="link_address"></p>
-
-    <!-- List group -->
-    <table class="table table-hover">
-        <tr>
-            <td rowspan="3"><img src="" id="image" /></td>
-            <td><font id="t_feed_info2">FEED 정보</font></td>
-        </tr>
-        <tr>
-            <td><small id="title"></small></td>
-        </tr>
-        <tr>
-            <td><font id="t_language">언어</font> <small id="language"></small></td>
-        </tr>
-        <tr>
-            <td colspan="2"><a href="" id="link_href"><small id="link"></small></a></td>
-        </tr>
-    </table>
-
-    <p id="download_buttons">
-        <button type="button" id="item_all" class="btn btn-primary btn-block"><font id="t_download_all">전체 다운로드</font></button>
-    </p>
-
-    <label class="checkbox-inline">
-        <input type="checkbox" id="is_auto_download" value="true"><font id="t_auto_download">신간이 있을 경우 자동 다운로드</font>
-    </label>
-    <br/>
-    <label class="checkbox-inline">
-        <input type="checkbox" id="is_auto_notification" value="true"><font id="t_auto_notification">신간이 있을 경우 상단에 표시</font>
-    </label>
-</div>
-<br/>
-
-<div class="navbar navbar-fixed-bottom">
-
-    <div class="" >
-        <button type="button" class="btn btn-primary" id="feed_url_save"><span class="glyphicon glyphicon-ok"></span><font id="t_save_button">저장</font></button>
-        <button type="button" class="btn btn-primary" id="feed_url_delete"><span class="glyphicon glyphicon-trash"></span><font id="t_delete_button">삭제</font></button>
-    </div>
-</div>
-
-
 <script src="libs/jquery.min.js"></script>
 <script src="libs/sugar.min.js"></script>
 <script src="libs/bootstrap/js/bootstrap.min.js"></script>
@@ -72,21 +71,34 @@ var app = {
 
     feedJSON : null,
     feedLinks : new LocalStorageJsonData('feedLinks'),
+    $buttonArray : new Array(),
 
     init : function() {
         // 이벤트 등록
         // イベント登録
 
+        /*
+        deviceready
+        pause
+        resume
+        online
+        offline
+        backbutton
+        menubutton
+        searchbutton
+        */
+
+
         // JMH가 최초로 기동했을때의 처리를 등록(이벤트쪽은 정확히 디버그해보지 않았음)
         // JMHの最初起動時の処理を登録(イベント設定の方は詳細に動作確認を行っていない)
-        document.addEventListener("deviceready", app.start, false);
+        document.addEventListener("deviceready", app.deviceready, false);
 
         // JMH가아이들 상태에서 복귀했을 상태일때의 이벤트 등록이겠지?
         // JMHがアイドル状態から復帰した場合かもね？
-        //document.addEventListener("resume", app.start, false);
+        //document.addEventListener("resume", app.resume, false);
     },
 
-    start : function() {
+    deviceready : function() {
 
         Setup.init().convert('feedClick');
 
@@ -108,6 +120,21 @@ var app = {
         app.setEvent();
     },
 
+    // 다른 화면 또는 소리재생중에 복귀한 경우
+    // 他の画面から復帰した場合、または音再生中から復帰した場合
+    resume : function() {
+        $.each($buttonArray, function(index, $button) {
+            // 버튼들에 표시되는 다운로드 상태를 갱신
+            // ボタンのダウンロード状態を更新
+            FileUtil.getFileFromLink(function(file) {
+                if (file.size == item.enclosure["@attributes"].length) {
+                    // ファイルが存在する場合ボタンのダウンロード状態を終了にする。
+                    $button.trigger('downloadEnd');
+                }
+            }, app.feedJSON.item[index].link);
+        });
+    },
+
     setEvent : function() {
         var app = this;
         $('#feed_url_save').click(function(event) {
@@ -117,7 +144,6 @@ console.log(JSON.stringify(app.feedLinks));
                 finalPubDate : app.feedJSON.item[0].pubDate
             };
             app.feedLinks.save();
-
         });
 
         $('#feed_url_delete').click(function(event) {
@@ -149,13 +175,11 @@ console.log(JSON.stringify(app.feedLinks));
 
                 // 다운로드 버튼을 동적으로 만들기.
                 // ダウンロードボタンを動的に作成する。
-                var item = null;
                 var $download_buttons = $('#download_buttons');
-                var buttonArray = new Array();
                 $.each(app.feedJSON.item, function(ind, item) {
-
                     var $button = $('<button type="button" class="btn btn-block"></button>');
-                    buttonArray.push($button);
+                    // 전체 다운로드 버튼을 위해 버튼들을 순서대로 보존
+                    app.$buttonArray.push($button);
                     $button.data('ind', ind).html(item.title + '<br/>' + item.guid).appendTo($download_buttons)
                                     .click(function(event) {
                                         // 다운로드 버튼을 눌럿을 경우의 동작 핸들러
@@ -163,49 +187,53 @@ console.log(JSON.stringify(app.feedLinks));
                                         //app.linkControl(app.feedJSON.item[$(this).data('ind')], $button);
                                         app.linkControl(item, $button);
                                     }).on('downloadStart', DownloadButtonProgress.downloadStart)
-                                    .on('downloading', DownloadButtonProgress.downloading);
+                                    .on('downloading', DownloadButtonProgress.downloading)
+                                    .on('downloadEnd', DownloadButtonProgress.downloadEnd)
+                                    .on('clickRelease', DownloadButtonProgress.clickRelease);
 
                     FileUtil.getFileFromLink(function(file) {
-//console.log(JSON.stringify(item));
+        //console.log(JSON.stringify(item));
                         if (file.size == item.enclosure["@attributes"].length) {
                             // ファイルが存在する場合
                             $button.data('file', file.fullPath).addClass('btn-success');
                         }
                     }, item.link);
-
                 });
 
+
                 $('#item_all').click(function(event) {
-                            // 전체다운로드 버튼 눌렀을때의 처리
-                            // 全体ダウンロードボタン押下時の処理
+                    // 전체다운로드 버튼 눌렀을때의 처리
+                    // 全体ダウンロードボタン押下時の処理
 
-                            if (!FileUtil.isFile(app.feedJSON.item[0].link)) {
-                                return;
-                            }
+                    $(this).attr("disabled", "disabled");
 
-                            var job = new Array();
+                    if (!FileUtil.isFile(app.feedJSON.item[0].link)) {
+                        return;
+                    }
 
-                            function doJob(index) {
+                    var job = new Array();
 
-                                var item = app.feedJSON.item[index];
-                                if (!item) {
-                                    return;
-                                }
+                    function doJob(index) {
 
-                                if (buttonArray[index].hasClass('btn-success')) {
-                                    doJob(index + 1);
-                                } else {
-                                    FileUtil.download(item.link,
-                                                        FileUtil.convertToDirFromLink(item.link),
-                                                        buttonArray[index],
-                                                        function (entry) {
-                                                            doJob(index + 1);
-                                                        }
-                                    );
-                                }
-                            }
-                            doJob(0);
-                        });
+                        var item = app.feedJSON.item[index];
+                        if (!item) {
+                            return;
+                        }
+
+                        if (app.$buttonArray[index].hasClass('btn-success')) {
+                            doJob(index + 1);
+                        } else {
+                            FileUtil.download(item.link,
+                                                FileUtil.convertToDirFromLink(item.link),
+                                                app.$buttonArray[index],
+                                                function (entry) {
+                                                    doJob(index + 1);
+                                                }
+                            );
+                        }
+                    }
+                    doJob(0);
+                });
             },
               "xml");
     },
@@ -213,13 +241,7 @@ console.log(JSON.stringify(app.feedLinks));
     linkControl : function(item, $progressArea) {
         var finishedFile = $progressArea.data('file');
         if (finishedFile) {
-            window.plugins.webintent.startActivity({
-                "action" : "android.intent.action.VIEW",
-                "type" : item.enclosure["@attributes"].type,
-                "url" : finishedFile},
-                function() {},
-                function() {alert('Failed to open URL via Android Intent')}
-            );
+            FileUtil.exec(finishedFile, item.enclosure["@attributes"].type);
             return;
         }
 
@@ -239,6 +261,8 @@ console.log(JSON.stringify(app.feedLinks));
 
 // js처리를 시작함.
 app.init();
+
+//var downloadingFile = new LocalStorageJsonData('downloadingFile');
 
 //TODO test
 //app.getFeedInfo("./J_sFFZRQVNZNT.xml");

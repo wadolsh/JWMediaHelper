@@ -1,14 +1,28 @@
 {
+    "index" : {
+        "t_index_title" : "JW Media Helper  ",
+        "t_index_title_small" : "Testing Version",
+        "t_panel_head_new_dn" : "최근에 다운로드한 미디어",
+        "t_panel_head_recent_open" : "최근에 실행한 미디어",
+        "t_link_file_explorer" : "미디어 탐색기",
+        "t_link_feed_explorer" : "RSS FEED 관리",
+        "t_link_setting" : "설정",
+        "" : "",
+        "" : "",
+        "" : "",
+        "" : ""
+
+    },
     "feedClick" : {
-        "t_feed_info1" : "FEED 정보",
-        "t_feed_is_new" : "등록",
+        "t_feed_title" : "FEED 정보",
+        "t_feed_titel_small" : "관리",
         "t_picked_feed_ilink" : "취득한 링크",
         "t_feed_info2" : "FEED 정보",
         "t_language" : "언어",
         "t_download_all" : "전체 다운로드",
         "t_auto_download" : "신간이 있을 경우 자동 다운로드",
         "t_auto_notification" : "신간이 있을 경우 상단에 표시",
-        "t_save_button" : "저장",
-        "t_delete_button" : "삭제"
+        "t_save_button" : "FEED 저장",
+        "t_delete_button" : "FEED 삭제"
     }
 }

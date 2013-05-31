@@ -41,6 +41,8 @@ audio:not([controls]) {
 }
 
 html {
+  padding-left: 4px;
+  padding-right: 4px;
   font-family: sans-serif;
   -webkit-text-size-adjust: 100%;
       -ms-text-size-adjust: 100%;
