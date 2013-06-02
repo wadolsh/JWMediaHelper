@@ -31,25 +31,16 @@
         </div>
 
         <div class="panel panel-primary">
-            <div class="panel-heading"><font id="t_panel_head_new_dn" class="strong">최근에 다운로드한 미디어</font></div>
-        </div>
-
-        <div class="panel panel-primary">
-            <div class="panel-heading"><font id="t_panel_head_recent_open">최근에 실행한 미디어</font></div>
-        </div>
-
-        <div class="panel panel-primary">
-            <div class="panel-heading"><strong><font id="t_panel_head_media_navi">전체 미디어</font></strong></div>
+            <div class="panel-heading"><strong><font id="t_panel_head_media_navi">RSS Feed 목록</font></strong></div>
+            <ul id="rss_list"></ul>
         </div>
 
         <div class="navbar navbar-fixed-bottom">
             JW Media Helper
         </div>
-
     </div>
 
 <script type="text/javascript" src="libs/phonegap/cordova-2.7.0.js"></script>
-<script type="text/javascript" src="libs/phonegap/webintent.js"></script>
 <script src="libs/jquery.min.js"></script>
 <script src="libs/bootstrap/js/bootstrap.min.js"></script>
 
@@ -60,6 +51,7 @@
 var app = {
 
     feedLinks : new LocalStorageJsonData('feedLinks'),
+    $rssList : $('#rss_list'),
 
     init : function() {
         /*
@@ -83,14 +75,14 @@ var app = {
     },
 
     deviceready : function() {
-        Setup.init().convert('feedExplorer');
+        //Setup.init().convert('feedExplorer');
 
         // deviceready가 아닌 상태에서 FileUtil을 초기화하면 모듈이 로드가 안됐다고 에라가 떴음.
         // devicereadyでない状態でFileUtilを初期化するとモジュールがロードされていなかったとエラーが発生。
         FileUtil.init();
         app.setEvent();
 
-
+        app.createFeedTag();
     },
 
     resume : function() {
@@ -99,6 +91,33 @@ var app = {
 
     setEvent : function() {
 
+    },
+
+    createFeedTag : function() {
+console.log(JSON.stringify(app.feedLinks.data));
+        $.each(app.feedLinks.data, function(lang, feeds){
+            var $langDiv = $('<div class="media-content" id="' + lang + '"/>').html('').appendTo(app.$rssList)
+                    .wrap('<li class="media"/>')
+                    .before('<span class="pull-left glyphicon glyphicon-folder-close"/>')
+                    .wrap('<div class="media-body"/>')
+                    .before('<h4 class="media-heading">' + lang + '</h4>');
+
+            $langDiv.prev().click(function(event) {
+                $langDiv.toggle().parent().prev().toggleClass('glyphicon-folder-close').toggleClass('glyphicon-folder-open');
+            });
+            $langDiv.hide();
+
+            $.each(feeds, function(key, feed){
+                var $feedDiv = $('<div class="media-content" id="' + key + '"/>').html('').appendTo($langDiv)
+                        .wrap('<li class="media"/>')
+                        .before('<span class="pull-left glyphicon glyphicon-tags"/>')
+                        .wrap('<div class="media-body"/>')
+                        .before('<h4 class="media-heading">' + key + '</h4>');
+                $feedDiv.prev().click(function(event) {
+                    location.href = './feedClick.html#' + lang + '|' + key;
+                });
+            });
+        });
     }
 }
 

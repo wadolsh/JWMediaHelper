@@ -1,16 +1,12 @@
 {
     "index" : {
-        "" : "",
-        "" : "",
-        "" : "",
-        "" : "",
-        "" : "",
-        "" : "",
-        "" : "",
-        "" : "",
-        "" : "",
-        "" : "",
-        "" : "",
+        "t_index_title" : "JW Media Helper  ",
+        "t_index_title_small" : "Testing Version",
+        "t_panel_head_new_dn" : "最近ダウンロードしたメディア",
+        "t_panel_head_recent_open" : "最近開いたメディア",
+        "t_link_file_explorer" : "メディアエクスプローラ",
+        "t_link_feed_explorer" : "RSS FEED 管理",
+        "t_link_setting" : "설정"
     },
     "feedClick" : {
         "t_feed_title" : "FEED 情報",

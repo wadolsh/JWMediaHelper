@@ -110,12 +110,20 @@ var app = {
             // 외부 브라우져에서 링크가 눌렸을 때의 URL정보 취득등을 처리
             // 外部ブラウザでリンクがクリックされた場合のURL情報を取得して処理
             // AndroidManifest.xml -> .ItpcClickActivity -> intent-filter 참고
-            if(url !== "") {
+            if(url) {
+console.log(url);
                 app.url = url.replace("itpc", "http");
                 $('#link_address').text(app.url);
                 app.getFeedInfo(app.url);
             }
         });
+
+        if(location.hash) {
+            $('#link_address').text(app.url);
+            var keys = location.hash.replace('#', '').split('|');
+            app.feedJSON = app.feedLinks.data[keys[0]][keys[1]];
+            app.render();
+        }
 
         app.setEvent();
     },
@@ -138,17 +146,98 @@ var app = {
     setEvent : function() {
         var app = this;
         $('#feed_url_save').click(function(event) {
-console.log(JSON.stringify(app.feedLinks));
+//console.log(JSON.stringify(app.feedJSON));
+            /*
             app.feedLinks.data[app.feedJSON.description] = {
                 link : app.url,
                 finalPubDate : app.feedJSON.item[0].pubDate
             };
+            */
+            if (!app.feedLinks.data[app.feedJSON.language]) {
+                app.feedLinks.data[app.feedJSON.language] = {};
+            }
+            app.feedLinks.data[app.feedJSON.language][app.feedJSON.description] = app.feedJSON;
             app.feedLinks.save();
         });
 
         $('#feed_url_delete').click(function(event) {
-            delete app.feedLinks.data[app.feedJSON.description];
+            delete app.feedLinks.data[app.feedJSON.language][app.feedJSON.description];
+            if (Object.keys(app.feedLinks.data[app.feedJSON.language]).length == 0) {
+                delete app.feedLinks.data[app.feedJSON.language];
+            }
             app.feedLinks.save();
+        });
+    },
+
+    render : function() {
+
+        // 캐쉬화한 데이터로 부터 화면에 데이터를 표시
+        // キャッシュー化したデータを画面に表示。
+        $("#image").attr("src", app.feedJSON.image ? app.feedJSON.image.url : "");
+        $("#title").text(app.feedJSON.title);
+        $("#link").text(app.feedJSON.link);
+        $("#link_href").attr("href", app.feedJSON.link);
+        $("#language").text(app.feedJSON.language);
+
+        // 다운로드 버튼을 동적으로 만들기.
+        // ダウンロードボタンを動的に作成する。
+        var $download_buttons = $('#download_buttons');
+        $.each(app.feedJSON.item, function(ind, item) {
+            var $button = $('<button type="button" class="btn btn-block"></button>');
+            // 전체 다운로드 버튼을 위해 버튼들을 순서대로 보존
+            app.$buttonArray.push($button);
+            $button.data('ind', ind).html(item.title + '<br/>' + item.guid).appendTo($download_buttons)
+                            .click(function(event) {
+                                // 다운로드 버튼을 눌럿을 경우의 동작 핸들러
+                                // ダウンロードボタン押下時のハンドラー
+                                //app.linkControl(app.feedJSON.item[$(this).data('ind')], $button);
+                                app.linkControl(item, $button);
+                            }).on('downloadStart', DownloadButtonProgress.downloadStart)
+                            .on('downloading', DownloadButtonProgress.downloading)
+                            .on('downloadEnd', DownloadButtonProgress.downloadEnd)
+                            .on('clickRelease', DownloadButtonProgress.clickRelease);
+
+            FileUtil.getFileFromLink(function(file) {
+//console.log(JSON.stringify(item));
+                if (file.size == item.enclosure["@attributes"].length) {
+                    // ファイルが存在する場合
+                    $button.data('file', file.fullPath).addClass('btn-success');
+                }
+            }, item.link);
+        });
+
+        $('#item_all').click(function(event) {
+            // 전체다운로드 버튼 눌렀을때의 처리
+            // 全体ダウンロードボタン押下時の処理
+
+            $(this).attr("disabled", "disabled");
+
+            if (!FileUtil.isFile(app.feedJSON.item[0].link)) {
+                return;
+            }
+
+            var job = new Array();
+
+            function doJob(index) {
+
+                var item = app.feedJSON.item[index];
+                if (!item) {
+                    return;
+                }
+
+                if (app.$buttonArray[index].hasClass('btn-success')) {
+                    doJob(index + 1);
+                } else {
+                    FileUtil.download(item.link,
+                                        FileUtil.convertToDirFromLink(item.link),
+                                        app.$buttonArray[index],
+                                        function (entry) {
+                                            doJob(index + 1);
+                                        }
+                    );
+                }
+            }
+            doJob(0);
         });
     },
 
@@ -156,86 +245,15 @@ console.log(JSON.stringify(app.feedLinks));
     getFeedInfo : function(url) {
         // jquery의 ajax처리로 jw.org로부터 최신의 FEED정보를 가져옴
         // jqueryのajax処理でjw.orgからFEEDリンクから最新の情報を取得
-        $.get(url,
-            function(xml) {
+        $.get(url, function(xml) {
                 //app.feedXML = xml;
                 //alert(JSON.stringify(xml2Obj(xml)));
 
                 // xml데이터를 json으로 파신한 후 편의상 channel엘리멘트 이하만 캐쉬화
                 // xmlデータをjsonに変換しchannelのみキャッシュー化する。
                 app.feedJSON = xml2Obj(xml).rss.channel;
-
-                // 캐쉬화한 데이터로 부터 화면에 데이터를 표시
-                // キャッシュー化したデータを画面に表示。
-                $("#image").attr("src", app.feedJSON.image ? app.feedJSON.image.url : "");
-                $("#title").text(app.feedJSON.title);
-                $("#link").text(app.feedJSON.link);
-                $("#link_href").attr("href", app.feedJSON.link);
-                $("#language").text(app.feedJSON.language);
-
-                // 다운로드 버튼을 동적으로 만들기.
-                // ダウンロードボタンを動的に作成する。
-                var $download_buttons = $('#download_buttons');
-                $.each(app.feedJSON.item, function(ind, item) {
-                    var $button = $('<button type="button" class="btn btn-block"></button>');
-                    // 전체 다운로드 버튼을 위해 버튼들을 순서대로 보존
-                    app.$buttonArray.push($button);
-                    $button.data('ind', ind).html(item.title + '<br/>' + item.guid).appendTo($download_buttons)
-                                    .click(function(event) {
-                                        // 다운로드 버튼을 눌럿을 경우의 동작 핸들러
-                                        // ダウンロードボタン押下時のハンドラー
-                                        //app.linkControl(app.feedJSON.item[$(this).data('ind')], $button);
-                                        app.linkControl(item, $button);
-                                    }).on('downloadStart', DownloadButtonProgress.downloadStart)
-                                    .on('downloading', DownloadButtonProgress.downloading)
-                                    .on('downloadEnd', DownloadButtonProgress.downloadEnd)
-                                    .on('clickRelease', DownloadButtonProgress.clickRelease);
-
-                    FileUtil.getFileFromLink(function(file) {
-        //console.log(JSON.stringify(item));
-                        if (file.size == item.enclosure["@attributes"].length) {
-                            // ファイルが存在する場合
-                            $button.data('file', file.fullPath).addClass('btn-success');
-                        }
-                    }, item.link);
-                });
-
-
-                $('#item_all').click(function(event) {
-                    // 전체다운로드 버튼 눌렀을때의 처리
-                    // 全体ダウンロードボタン押下時の処理
-
-                    $(this).attr("disabled", "disabled");
-
-                    if (!FileUtil.isFile(app.feedJSON.item[0].link)) {
-                        return;
-                    }
-
-                    var job = new Array();
-
-                    function doJob(index) {
-
-                        var item = app.feedJSON.item[index];
-                        if (!item) {
-                            return;
-                        }
-
-                        if (app.$buttonArray[index].hasClass('btn-success')) {
-                            doJob(index + 1);
-                        } else {
-                            FileUtil.download(item.link,
-                                                FileUtil.convertToDirFromLink(item.link),
-                                                app.$buttonArray[index],
-                                                function (entry) {
-                                                    doJob(index + 1);
-                                                }
-                            );
-                        }
-                    }
-                    doJob(0);
-                });
-            },
-              "xml");
+                app.render();
+        }, "xml");
     },
 
     linkControl : function(item, $progressArea) {

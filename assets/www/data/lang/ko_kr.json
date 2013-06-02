@@ -6,11 +6,7 @@
         "t_panel_head_recent_open" : "최근에 실행한 미디어",
         "t_link_file_explorer" : "미디어 탐색기",
         "t_link_feed_explorer" : "RSS FEED 관리",
-        "t_link_setting" : "설정",
-        "" : "",
-        "" : "",
-        "" : "",
-        "" : ""
+        "t_link_setting" : "설정"
 
     },
     "feedClick" : {

@@ -10,7 +10,6 @@ $.ajaxSetup({
     }
 });
 
-
 var setting = null;
 var Setup = {
     lang : null,
