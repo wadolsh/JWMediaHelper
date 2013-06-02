@@ -32,7 +32,7 @@
 
         <div class="panel panel-primary">
             <div class="panel-heading"><strong><font id="t_panel_head_media_navi">전체 미디어</font></strong></div>
-            <ul class="media-list"></ul>
+            <ul id="media_list"></ul>
         </div>
 
         <div class="navbar navbar-fixed-bottom">
@@ -77,13 +77,13 @@ var app = {
 
     deviceready : function() {
         //Setup.init().convert('fileExplorer');
-        // deviceready가 아닌 상태에서 FileUtil을 초기화하면 모듈이 로드가 안됐다고 에라가 떴음.
+        // deviceready가 아닌 상태에서 FileUtil을 초기화하면 모듈이 로드가 안됐다고 에러가 떴음.
         // devicereadyでない状態でFileUtilを初期化するとモジュールがロードされていなかったとエラーが発生。
         FileUtil.init();
 
         // ディレクトリ内のメディア情報を取得
         app.fullTree = new FileTreeInfo(FileUtil.baseMediaDir, { $baseTag : $('#media_list'), createMediaTag : app.createMediaTag });
-//console.log(JSON.stringify(app.fullTree.tree));
+console.log(JSON.stringify(app.fullTree.tree));
 
         app.setEvent();
     },

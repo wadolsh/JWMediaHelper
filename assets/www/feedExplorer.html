@@ -94,7 +94,7 @@ var app = {
     },
 
     createFeedTag : function() {
-console.log(JSON.stringify(app.feedLinks.data));
+
         $.each(app.feedLinks.data, function(lang, feeds){
             var $langDiv = $('<div class="media-content" id="' + lang + '"/>').html('').appendTo(app.$rssList)
                     .wrap('<li class="media"/>')
