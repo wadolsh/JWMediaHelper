@@ -1,0 +1,11 @@
+201009
+
+http://www.jw.org/apps/KO_TRGCHlZRQVNYVrXF?fileformat=PDF&issue=201308&output=json&pub=g&langwritten=KO
+http://www.jw.org/apps/KO_TRGCHlZRQVNYVrXF?fileformat=MP4&output=json&pub=ivjwo&langwritten=KO&alllangs=1
+http://www.jw.org/apps/KO_sFFZRQVNZNT?rln=KO&rmn=w&rfm=pdf&rpf=&rpe=
+http://www.jw.org/apps/KO_QrYQZRQVNZNT?rln=KO&rmn=w&rfm=PDF
+http://www.jw.org/apps/KO_sFFZRQVNZNT?rln=KSL&rmn=w&rfm=m4v
+
+http://www.jw.org/apps/KO_TRGCHlZRQVNYVrXF?pub=w&issue=20130715&txtCMSLang=KO&langwritten=KSL&fileformat=M4V&track=01&output=json
+
+http://www.jw.org/ko/publications/bible/json

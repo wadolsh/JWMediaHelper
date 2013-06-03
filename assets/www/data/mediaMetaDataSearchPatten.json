@@ -1,0 +1,8 @@
+{
+    g : {
+        fileformat : ["PDF",],
+        issue=201308,
+        output=json
+        langwritten=KO
+    }
+}

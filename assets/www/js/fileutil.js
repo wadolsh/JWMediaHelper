@@ -119,6 +119,17 @@ var FileUtil = {
         );
     },
 
+    toHumanReadAbleSize : function(fileSizeInBytes) {
+        var i = -1;
+        var byteUnits = [' kB', ' MB', ' GB'];
+        do {
+            fileSizeInBytes = fileSizeInBytes / 1024;
+            i++;
+        } while (fileSizeInBytes > 1024);
+
+        return Math.max(fileSizeInBytes, 0.1).toFixed(1) + byteUnits[i];
+    },
+
     getFileEntry : function(fullPath, fileName) {
         fileName = fileName || fullPath.substring(fullPath.lastIndexOf('/')+1);
         return new FileEntry(fileName, fullPath);
@@ -240,7 +251,7 @@ console.log(JSON.stringify(progressEvent));
 var FileTreeInfo = function(baseFullPath, extra) {
     this.baseFullPath = baseFullPath;
     this.filter = extra.filter;
-    this.extra = extra; // {filter, $baseTag, createMediaTag }
+    this.extra = extra; // {filter, createMediaTag }
     this.fullScan();
 };
 FileTreeInfo.prototype = {
@@ -259,8 +270,7 @@ FileTreeInfo.prototype = {
             size : 0
         };
 
-        var $baseTag = this.extra && this.extra.$baseTag ? this.extra.$baseTag : null;
-        this.addFullScan(this.baseFullPath, this.tree, new Array(this.tree), $baseTag);
+        this.addFullScan(this.baseFullPath, this.tree, new Array(this.tree));
     },
 
     // funnPath 아래의 전 디렉토리와 파일을 검색
@@ -286,14 +296,7 @@ FileTreeInfo.prototype = {
                     }
 
                     var newParentArray = (new Array(thisDir)).concat(parentArray);
-
-                    var $thisTag = null;
-                    if ($parentTag) {
-                        // 화면에 표시할 파일 경로 트리를 작성
-                        $thisTag = tree.extra.createMediaTag($parentTag, thisDir);
-                    }
-
-                    tree.addFullScan(entry.fullPath, thisDir, newParentArray, $thisTag);
+                    tree.addFullScan(entry.fullPath, thisDir, newParentArray);
                 } else if (entry.isFile) {
                     FileUtil.getFile(function(file) {
 //console.log(JSON.stringify(file));
@@ -305,19 +308,27 @@ FileTreeInfo.prototype = {
                             // すべての親のディレクトリにファイルサイズをプラスしてディレクトリ使用量を計算
                             parentArray[i].size += file.size;
                         }
-
-                        if ($parentTag) {
-                            // 화면에 표시할 파일 경로 트리를 작성
-                            tree.extra.createMediaTag($parentTag, file);
-                        }
-
                     }, entry.fullPath, entry.name);
                 }
             });
 
         });
+    },
+
+    createTagTree : function(parent, $parentTag) {
+        var tree = this;
+        $.each(parent.subDirs, function(index, thisDir){
+            // 화면에 표시할 파일 경로 트리를 작성
+            $thisTag = tree.extra.createMediaTag($parentTag, thisDir);
+            tree.createTagTree(thisDir, $thisTag);
+        });
+        $.each(parent.files, function(index, thisFile){
+            // 화면에 표시할 파일 경로 트리를 작성
+            tree.extra.createMediaTag($parentTag, thisFile);
+        });
     }
 }
+
 
 
 /*
