@@ -1,3 +1,6 @@
+var downLoadingFiles = new LocalStorageJsonData('downLoadingFiles');
+var downLoadedFiles = new LocalStorageJsonData('downLoadedFiles');
+
 var FileUtil = {
     fileExtension : "pdf,epub,mp3,m4b",
     fileExtensionIcon : {
@@ -183,6 +186,9 @@ var FileUtil = {
 var DownloadButtonProgress = {
 
     downloadStart : function(event, fileTransfer) {
+// console.log(JSON.stringify(fileTransfer));
+        //downLoadingFiles.data[]
+
         // button
         var $this = $(this);
         this.$this = $this;
@@ -328,6 +334,8 @@ FileTreeInfo.prototype = {
         });
     }
 }
+
+
 
 
 

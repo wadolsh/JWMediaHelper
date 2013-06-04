@@ -98,7 +98,8 @@ var app = {
         $.each(app.feedLinks.data, function(lang, feeds){
             var $langDiv = $('<div class="media-content" id="' + lang + '"/>').html('').appendTo(app.$rssList)
                     .wrap('<li class="media"/>')
-                    .before('<span class="pull-left glyphicon glyphicon-folder-close"/>')
+
+                       .before('<span class="pull-left glyphicon glyphicon-folder-close"/>')
                     .wrap('<div class="media-body"/>')
                     .before('<h4 class="media-heading">' + lang + '</h4>');
 
@@ -106,13 +107,12 @@ var app = {
                 $langDiv.toggle().parent().prev().toggleClass('glyphicon-folder-close').toggleClass('glyphicon-folder-open');
             });
             $langDiv.hide();
-
-            $.each(feeds, function(key, feed){
+        $.each(feeds, function(key, feed){
                 var $feedDiv = $('<div class="media-content" id="' + key + '"/>').html('').appendTo($langDiv)
                         .wrap('<li class="media"/>')
                         .before('<span class="pull-left glyphicon glyphicon-tags"/>')
                         .wrap('<div class="media-body"/>')
-                        .before('<h4 class="media-heading">' + key + '</h4>');
+                        .before('<h4 class="media-heading">' + feed.title || key + '</h4>');
                 $feedDiv.prev().click(function(event) {
                     location.href = './feedClick.html#' + lang + '|' + key;
                 });
