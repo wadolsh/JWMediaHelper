@@ -222,7 +222,7 @@ var DownloadButtonProgress = {
             var percentage = Math.ceil(progressEvent.loaded / (progressEvent.total * 2) * 100);
 
 //console.log(percentage + '|' +  progressEvent.loaded + '|' + progressEvent.total);
-console.log(JSON.stringify(progressEvent));
+//console.log(JSON.stringify(progressEvent));
 
             this.$progressBar.css('width', percentage + '%').text(Math.ceil(progressEvent.loaded / 2048) + 'KB / ' + Math.ceil(progressEvent.total / 1024) + 'KB');;
 

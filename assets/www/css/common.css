@@ -1,3 +1,21 @@
+html {
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+body {
+    background-color: #eee;
+}
+.panel-heading, .panel, .list-group-item:first-child, .list-group-item:last-child{
+    border-radius: 0px;
+}
+
+
+.panel-heading, .panel, .list-group{
+      -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+              box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
 .blink {
     animation:fade 3000ms infinite;
     -webkit-animation:fade 3000ms infinite;
