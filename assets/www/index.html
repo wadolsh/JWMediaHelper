@@ -32,10 +32,12 @@
 
         <div class="panel panel-primary">
             <div class="panel-heading"><font id="t_panel_head_new_dn" class="strong">최근에 다운로드한 미디어</font></div>
+            <div id="t_panel_new_dn"></div>
         </div>
 
         <div class="panel panel-primary">
             <div class="panel-heading"><font id="t_panel_head_recent_open">최근에 실행한 미디어</font></div>
+            <div id="t_panel_recent_open"></div>
         </div>
 
         <div class="list-group">
@@ -76,8 +78,9 @@
 
 <script type="text/javascript" src="libs/phonegap/cordova-2.7.0.js"></script>
 <script type="text/javascript" src="libs/phonegap/webintent.js"></script>
-<script src="libs/jquery.min.js"></script>
-<script src="libs/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="libs/jquery.min.js"></script>
+<script type="text/javascript" src="libs/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="libs/underscore.js"></script>
 
 <script type="text/javascript" src="js/setup.js"></script>
 <script type="text/javascript" src="js/fileutil.js"></script>
@@ -112,6 +115,7 @@ var app = {
         // devicereadyでない状態でFileUtilを初期化するとモジュールがロードされていなかったとエラーが発生。
         FileUtil.init();
 
+        app.createRecentItem($('#recentItemTemplate'), downLoadedFiles.data);
         app.setEvent();
     },
 
@@ -121,12 +125,43 @@ var app = {
 
     setEvent : function() {
 
+    },
+
+    render : function() {
+
+    },
+
+    createRecentItem : function($area, datas) {
+        console.log(JSON.stringify(datas));
+        if (_.size(datas)  == 0) {
+            return;
+        }
+        $area.html(_.template($('#recentItemTemplate').html(), {datas : datas}));
     }
 }
+
+var downLoadedFiles = new LocalStorageJsonData('downLoadedFiles');
 
 // js처리를 시작함.
 app.init();
 
+
+
+</script>
+
+<script type="text/template" id="recentItemTemplate">
+    <% _.each(datas, function(data) { %>
+        <div class="row">
+          <div class="col col-lg-3">
+            <div class="thumbnail">
+              <img data-src="holder.js/300x200" alt="">
+              <div class="caption">
+                <h3><%= data.title %></h3>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
 </script>
 </body>
 </html>

@@ -197,6 +197,9 @@ console.log(url);
                             .on('downloadEnd', DownloadButtonProgress.downloadEnd)
                             .on('clickRelease', DownloadButtonProgress.clickRelease);
 
+            var obj = $button.get(0);
+            obj.title = item.title;
+
             FileUtil.getFileFromLink(function(file) {
 //console.log(JSON.stringify(item));
                 if (file.size == item.enclosure["@attributes"].length) {
