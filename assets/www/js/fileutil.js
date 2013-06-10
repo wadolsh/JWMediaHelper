@@ -245,6 +245,9 @@ var DownloadButtonProgress = {
             this.$progressBar.parent().remove();
             delete this.$progressBar;
         }
+
+        downLoadedFiles.data[this.title] = this.fullPath;
+        downLoadedFiles.save();
         this.$this.trigger('clickRelease');
     },
 
