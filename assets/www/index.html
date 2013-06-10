@@ -33,12 +33,12 @@
 
         <div class="panel panel-primary">
             <div class="panel-heading"><font id="t_panel_head_new_dn" class="strong">최근에 다운로드한 미디어</font></div>
-            <div id="t_panel_new_dn"></div>
+            <ul class="media-list" id="t_panel_new_dn"></ul>
         </div>
 
         <div class="panel panel-primary">
             <div class="panel-heading"><font id="t_panel_head_recent_open">최근에 실행한 미디어</font></div>
-            <div id="t_panel_recent_open"></div>
+            <ul class="media-list" id="t_panel_recent_open"></ul>
         </div>
 
         <div class="list-group">
@@ -77,7 +77,21 @@
 
     </div>
 
-<script type="text/javascript" src="libs/phonegap/cordova-2.7.0.js1"></script>
+<script type="text/template" id="recentItemTemplate">
+    <% _.each(datas, function(value, key) { %>
+            <li class="media" onclick="FileUtil.execRecent('<%= value[0] %>', '<%= value[1] %>');">
+                <a class="pull-left" href="#">
+                    <img class="media-object" src="img/icon.png">
+                </a>
+                <div class="media-body">
+                    <h4 class="media-heading"><%= key %></h4>
+                </div>
+            </li>
+    <% }) %>
+</script>
+
+
+<script type="text/javascript" src="libs/phonegap/cordova-2.7.0.js"></script>
 <script type="text/javascript" src="libs/phonegap/webintent.js"></script>
 <script type="text/javascript" src="libs/jquery.min.js"></script>
 <script type="text/javascript" src="libs/bootstrap/js/bootstrap.min.js"></script>
@@ -88,6 +102,9 @@
 <script type="text/javascript" src="js/feedutil.js"></script>
 <script type="text/javascript">
 var app = {
+
+    recentItemTemplate : _.template($('#recentItemTemplate').html()),
+
     init : function() {
         /*
         deviceready
@@ -116,12 +133,15 @@ var app = {
         // devicereadyでない状態でFileUtilを初期化するとモジュールがロードされていなかったとエラーが発生。
         FileUtil.init();
 
-        app.createRecentItem($('#recentItemTemplate'), downLoadedFiles.data);
+        app.createRecentItem($('#t_panel_new_dn'), downLoadedFiles.data);
+        app.createRecentItem($('#t_panel_recent_open'), openedFiles.data);
+        console.log(JSON.stringify(openedFiles.data));
         app.setEvent();
     },
 
     resume : function() {
-
+        app.createRecentItem($('#t_panel_new_dn').empty(), downLoadedFiles.data);
+        app.createRecentItem($('#t_panel_recent_open').empty(), openedFiles.data);
     },
 
     setEvent : function() {
@@ -133,15 +153,18 @@ var app = {
     },
 
     createRecentItem : function($area, datas) {
-        console.log(JSON.stringify(datas));
-        if (_.size(datas)  == 0) {
+
+        if (_.size(datas) == 0) {
             return;
         }
-        $area.html(_.template($('#recentItemTemplate').html(), {datas : datas}));
+
+        console.log(JSON.stringify(datas));
+        $area.append(this.recentItemTemplate({'datas' : datas}));
     }
 }
 
 var downLoadedFiles = new LocalStorageJsonData('downLoadedFiles');
+var openedFiles = new LocalStorageJsonData('openedFiles');
 
 // js처리를 시작함.
 app.init();
@@ -150,19 +173,6 @@ app.init();
 
 </script>
 
-<script type="text/template" id="recentItemTemplate">
-    <% _.each(datas, function(data) { %>
-        <div class="row">
-          <div class="col col-lg-3">
-            <div class="thumbnail">
-              <img data-src="holder.js/300x200" alt="">
-              <div class="caption">
-                <h3><%= data.title %></h3>
-              </div>
-            </div>
-          </div>
-        </div>
-    </div>
-</script>
+
 </body>
 </html>

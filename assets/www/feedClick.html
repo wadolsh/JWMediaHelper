@@ -263,7 +263,7 @@ console.log(url);
     linkControl : function(item, $progressArea) {
         var finishedFile = $progressArea.data('file');
         if (finishedFile) {
-            FileUtil.exec(finishedFile, item.enclosure["@attributes"].type);
+            FileUtil.exec(item.title, finishedFile, item.enclosure["@attributes"].type);
             return;
         }
 

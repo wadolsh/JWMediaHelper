@@ -120,7 +120,7 @@ console.log(JSON.stringify(entry));
             $div.prev().click(function(event) {
 console.log(JSON.stringify(entry));
                 $(this).addClass('active');
-                FileUtil.exec(entry.fullPath, entry.type);
+                FileUtil.exec(entry.name, entry.fullPath, entry.type);
             });
         }
         return $div;

@@ -1,5 +1,6 @@
 var downLoadingFiles = new LocalStorageJsonData('downLoadingFiles');
 var downLoadedFiles = new LocalStorageJsonData('downLoadedFiles');
+var openedFiles = new LocalStorageJsonData('openedFiles');
 
 var FileUtil = {
     fileExtension : "pdf,epub,mp3,m4b",
@@ -112,12 +113,28 @@ var FileUtil = {
         return category + this.convertToDirFromFileName(fileName);
     },
 
-    exec : function(filePath, type) {
+    exec : function(title, filePath, type) {
+        openedFiles.data[title] = new Array(filePath, type);
+        openedFiles.save();
+
         window.plugins.webintent.startActivity({
             "action" : "android.intent.action.VIEW",
             "type" : type,
             "url" : filePath},
-            function() {},
+            function() {
+            },
+            function() {alert('Failed to open URL via Android Intent')}
+        );
+    },
+
+    execRecent : function(filePath, type) {
+        window.plugins.webintent.startActivity({
+            "action" : "android.intent.action.VIEW",
+            "type" : type,
+            "url" : filePath},
+            function() {
+                openedFiles.data[title] = filePath;
+            },
             function() {alert('Failed to open URL via Android Intent')}
         );
     },
@@ -246,7 +263,7 @@ var DownloadButtonProgress = {
             delete this.$progressBar;
         }
 
-        downLoadedFiles.data[this.title] = this.fullPath;
+        downLoadedFiles.data[this.title] = new Array(this.fullPath, "application/" + FileUtil.getExtension(this.fullPath));
         downLoadedFiles.save();
         this.$this.trigger('clickRelease');
     },
