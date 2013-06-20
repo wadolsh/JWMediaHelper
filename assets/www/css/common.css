@@ -12,8 +12,8 @@ body {
 
 
 .panel-heading, .panel, .list-group, .btn {
-      -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-              box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+      -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+              box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
 
 
