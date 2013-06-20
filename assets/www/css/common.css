@@ -6,14 +6,14 @@ html {
 body {
     background-color: #eee;
 }
-.panel-heading, .panel, .list-group-item:first-child, .list-group-item:last-child{
+.panel-heading, .panel, .list-group-item:first-child, .list-group-item:last-child, .btn {
     border-radius: 0px;
 }
 
 
-.panel-heading, .panel, .list-group{
-      -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-              box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+.panel-heading, .panel, .list-group, .btn {
+      -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+              box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
 
 

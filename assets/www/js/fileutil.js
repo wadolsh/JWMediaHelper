@@ -357,7 +357,9 @@ FileTreeInfo.prototype = {
 
 
 
+var FileMediaInfoTool =  {
 
+}
 
 /*
 
