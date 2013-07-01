@@ -178,6 +178,16 @@ var FileUtil = {
         directoryReader.readEntries(callback, this.fail);
     },
 
+    mediaScan : function(filePath) {
+        console.log("mediaScan : " + filePath);
+        window.plugins.webintent.mediaScan(
+            filePath,
+            function() {
+                console.log("mediaScan2 : " + filePath);
+            },
+            function() {alert('Failed to MediaScan')}
+        );
+    }
 
 /*
     saveFile : funtion(fileName, data) {
@@ -257,13 +267,16 @@ var DownloadButtonProgress = {
     },
 
     downloadEnd : function(event) {
+
+        FileUtil.mediaScan(this.fullPath);
+
         if (this.$progressBar) {
             //this.$cancelButton.remove();
             this.$progressBar.parent().remove();
             delete this.$progressBar;
         }
 
-        downLoadedFiles.data[this.title] = new Array(this.fullPath, "application/" + FileUtil.getExtension(this.fullPath));
+        downLoadedFiles.data[this.title] = new Array(this.fullPath, this.mediaType);
         downLoadedFiles.save();
         this.$this.trigger('clickRelease');
     },

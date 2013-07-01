@@ -201,6 +201,7 @@ console.log(url);
 
             var obj = $button.get(0);
             obj.title = item.title;
+            obj.mediaType = item.enclosure["@attributes"].type;
 
             FileUtil.getFileFromLink(function(file) {
 //console.log(JSON.stringify(item));

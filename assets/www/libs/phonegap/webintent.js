@@ -63,6 +63,14 @@
         }, 'WebIntent', 'sendBroadcast', [params]);
     };
 
+    WebIntent.prototype.mediaScan = function(params, success, fail) {
+        return cordova.exec(function(args) {
+            success(args);
+        }, function(args) {
+            fail(args);
+        }, 'WebIntent', 'mediaScan', [params]);
+    };
+
     cordova.addConstructor(function() {
         window.webintent = new WebIntent();
 

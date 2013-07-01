@@ -111,8 +111,7 @@ public class WebIntent extends CordovaPlugin {
                 result.setKeepCallback(true);
                 context.sendPluginResult(result);
                 return true;
-            } else if (action.equals("sendBroadcast"))
-            {
+            } else if (action.equals("sendBroadcast")) {
                 if (args.length() != 1) {
                     return false;
                 }
@@ -135,6 +134,13 @@ public class WebIntent extends CordovaPlugin {
 
                 sendBroadcast(obj.getString("action"), extrasMap);
                 context.success();
+                return true;
+            } else if (action.equals("mediaScan")) {
+                if (args.length() != 1) {
+                    return false;
+                }
+                String uri = args.getString(0);
+                ((DroidGap)this.cordova.getActivity()).sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse(uri)));
                 return true;
             }
             return false;
@@ -185,6 +191,7 @@ public class WebIntent extends CordovaPlugin {
     }
 
     void sendBroadcast(String action, Map<String, String> extras) {
+
         Intent intent = new Intent();
         intent.setAction(action);
         for (String key : extras.keySet()) {

@@ -135,7 +135,8 @@ var app = {
 
         app.createRecentItem($('#t_panel_new_dn'), downLoadedFiles.data);
         app.createRecentItem($('#t_panel_recent_open'), openedFiles.data);
-        console.log(JSON.stringify(openedFiles.data));
+        console.log("aaa" + JSON.stringify(downLoadedFiles.data));
+        console.log("bbb" + JSON.stringify(openedFiles.data));
         app.setEvent();
     },
 
