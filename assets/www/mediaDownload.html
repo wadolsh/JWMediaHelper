@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="libs/bootstrap/css/bootstrap.css" rel="stylesheet" media="screen">
+    <link href="css/common.css" rel="stylesheet">
+    <title>File Explorer</title>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1><font id="t_index_title">미디어 탐색기  </font><small><font id="t_index_title_small"></font></small></h1>
+        </div>
+
+        <div class="panel panel-primary">
+            <div class="panel-heading"><strong><font id="t_panel_head_media_download">전체 미디어</font></strong></div>
+            <ul id="media_list"></ul>
+        </div>
+
+        <div class="navbar navbar-fixed-bottom">
+            JW Media Helper
+        </div>
+
+    </div>
+
+<script type="text/javascript" src="libs/phonegap/cordova-2.7.0.js"></script>
+<script type="text/javascript" src="libs/phonegap/webintent.js"></script>
+<script src="libs/jquery.min.js"></script>
+<script src="libs/bootstrap/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="js/setup.js"></script>
+<script type="text/javascript" src="js/fileutil.js"></script>
+<script type="text/javascript" src="js/feedutil.js"></script>
+<script type="text/javascript">
+var app = {
+    $media_list : $('#media_list'),
+
+    init : function() {
+        /*
+        deviceready
+        pause
+        resume
+        online
+        offline
+        backbutton
+        menubutton
+        searchbutton
+        */
+
+        // JMH가 최초로 기동했을때의 처리를 등록(이벤트쪽은 정확히 디버그해보지 않았음)
+        // JMHの最初起動時の処理を登録(イベント設定の方は詳細に動作確認を行っていない)
+        document.addEventListener("deviceready", app.deviceready, false);
+
+        // JMH가아이들 상태에서 복귀했을 상태일때의 이벤트 등록이겠지?
+        // JMHがアイドル状態から復帰した場合かもね？
+        //document.addEventListener("resume", app.resume, false);
+    },
+
+    deviceready : function() {
+        //Setup.init().convert('fileExplorer');
+        // deviceready가 아닌 상태에서 FileUtil을 초기화하면 모듈이 로드가 안됐다고 에러가 떴음.
+        // devicereadyでない状態でFileUtilを初期化するとモジュールがロードされていなかったとエラーが発生。
+        FileUtil.init();
+
+        app.setEvent();
+    },
+
+    resume : function() {
+
+    },
+
+    setEvent : function() {
+
+    },
+
+    createMediaTag : function($parent, entry) {
+//console.log(JSON.stringify(entry));
+        var $div = $('<div class="media-content" id=" + entry.name + "/>').html('size : ' + FileUtil.toHumanReadAbleSize(entry.size)).appendTo($parent)
+                            .wrap('<li class="media"/>')
+                            .before('<span class="pull-left glyphicon ' + FileUtil.fileExtensionIcon[entry.extension] + '"/>')
+                            .wrap('<div class="media-body"/>')
+                            .before('<h4 class="media-heading">' + entry.name + '</h4>');
+
+        if (entry.extension == 'dir') {
+            $div.prev().click(function(event) {
+console.log(JSON.stringify(entry));
+                app.$media_list.find('.media-heading').removeClass('active');
+                $div.toggle().prev().addClass('active').parent().prev().toggleClass('glyphicon-folder-close').toggleClass('glyphicon-folder-open');
+                //FileUtil.exec(entry.files, entry.files[Object.keys(entry.files)[0]].type);
+            });
+            $div.hide();
+        } else {
+            $div.prev().click(function(event) {
+console.log(JSON.stringify(entry));
+                $(this).addClass('active');
+                FileUtil.exec(entry.name, entry.fullPath, entry.type);
+            });
+        }
+        return $div;
+    }
+}
+
+// js처리를 시작함.
+app.init();
+
+</script>
+</body>
+</html>
